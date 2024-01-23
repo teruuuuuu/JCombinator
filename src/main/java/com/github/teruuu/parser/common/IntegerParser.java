@@ -1,27 +1,35 @@
 package com.github.teruuu.parser.common;
 
+import com.github.teruuu.parser.common.type.Either;
+
 public class IntegerParser implements Parser<Integer> {
-
-    private final int ZERO_CODE = '0';
-    private final int NINE_CODE = '9';
-
+    int reallyBig = Integer.MAX_VALUE / 10;
     @Override
     public ParseResult<Integer> parse(String input, int location) {
-        boolean isNumber = false;
-        int num = 0;
-        while (input.charAt(location) >= ZERO_CODE && input.charAt(location) <= NINE_CODE) {
-            num *= 10;
-            num += (input.charAt(location) - ZERO_CODE);
+        int signe = 1;
+        int number = 0;
+        int length = input.length();
+        if (input.charAt(location) == '-') {
+            signe = -1;
             location++;
-            isNumber = true;
-            if (input.length() <= location) {
-                break;
-            }
+        } else if (input.charAt(location) == '+') {
+            signe = 1;
+            location++;
         }
-        if (isNumber) {
-            return new ParseResult.Success<>(num, location);
+
+        if (input.charAt(location) >= '0' && input.charAt(location) <= '9') {
+            // 整数部分
+            while (length > location && input.charAt(location) >= '0' && input.charAt(location) <= '9') {
+                if (number >= reallyBig) {
+                    return new ParseResult.Failure<>(String.format("exceeds the limit(location=[%d] input=[%s]", location, input), location);
+                }
+                number *= 10;
+                number += (input.charAt(location) - '0');
+                location++;
+            }
+            return new ParseResult.Success<>(signe * number, location);
         } else {
-            return new ParseResult.Failure<>(String.format("not number location=[%d] input=[%s]", location, input), location);
+            return new ParseResult.Failure<>(String.format("not number(location=[%d] input=[%s]", location, input), location);
         }
     }
 }
