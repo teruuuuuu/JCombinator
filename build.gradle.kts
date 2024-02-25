@@ -5,11 +5,9 @@ plugins {
 
 version = "0.0.1"
 
-defaultTasks("clean", "build")
-
-repositories {
-    mavenCentral()
-    google()
+java {
+    sourceCompatibility = JavaVersion.VERSION_21
+    targetCompatibility = JavaVersion.VERSION_21
 }
 
 gradle.projectsEvaluated {
@@ -21,16 +19,42 @@ gradle.projectsEvaluated {
     }
 }
 
-tasks.withType<Test> {
-    useJUnitPlatform()
+allprojects {
+    layout.buildDirectory.set(File("${rootProject.projectDir}/build/${project.name}"))
+
+    defaultTasks("clean", "build")
+
+    repositories {
+        mavenCentral()
+    }
 }
 
-dependencies {
-    testImplementation(platform("org.junit:junit-bom:5.9.1"))
-    testImplementation("org.junit.jupiter:junit-jupiter")
+subprojects {
+    apply(plugin = "java")
+
+    dependencies {
+        testImplementation(platform("org.junit:junit-bom:5.9.1"))
+        testImplementation("org.junit.jupiter:junit-jupiter")
+    }
+
+    tasks.withType<Test> {
+        useJUnitPlatform()
+    }
+
 }
 
-java {
-    sourceCompatibility = JavaVersion.VERSION_21
-    targetCompatibility = JavaVersion.VERSION_21
+project(":jcombinator-core") {
+    layout.buildDirectory.dir("${rootProject.projectDir}/build/${project.name}")
+}
+
+project(":jcombinator-example") {
+    dependencies {
+        implementation(project(":jcombinator-core"))
+    }
+}
+
+project(":jcombinator-regexp") {
+    dependencies {
+        implementation(project(":jcombinator-core"))
+    }
 }
