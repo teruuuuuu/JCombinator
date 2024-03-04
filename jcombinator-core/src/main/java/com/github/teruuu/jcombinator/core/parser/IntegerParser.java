@@ -8,6 +8,10 @@ public class IntegerParser implements Parser<Integer> {
         int signe = 1;
         int number = 0;
         int length = input.length();
+        if (length <= location) {
+            return new ParseResult.Failure<>("index out of bounds", location);
+        }
+
         if (input.charAt(location) == '-') {
             signe = -1;
             location++;

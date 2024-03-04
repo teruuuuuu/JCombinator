@@ -148,7 +148,7 @@ public class RegExpParser implements Parser<Rule> {
         protected Parser<Rule> genParser() {
             return Parser.literal(LEFT_SQUARE_BRACKET).flatMap(leftBracket ->
                     Parser.literal(HAT).optional().flatMap(hatOpt ->
-                            whichInner.and(whichInner.seq()).flatMap(inner ->
+                            whichInner.and(whichInner.seq0()).flatMap(inner ->
                                             Parser.literal(RIGHT_SQUARE_BRACKET).map(rightBracket ->
                                                     hatOpt.isEmpty() ?
                                                             foldLeft(inner._1(), inner._2(), Rule::select)
@@ -214,7 +214,7 @@ public class RegExpParser implements Parser<Rule> {
     Parser<Rule> selectParser = new ParserBase<>() {
         @Override
         protected Parser<Rule> genParser() {
-            return connectParser.and(Parser.literal(PIPE).andRight(connectParser).seq()).map(rules ->
+            return connectParser.and(Parser.literal(PIPE).andRight(connectParser).seq0()).map(rules ->
                     foldLeft(rules._1(), rules._2(), Rule::select)
             );
         }
@@ -223,7 +223,7 @@ public class RegExpParser implements Parser<Rule> {
     Parser<Rule> connectParser = new ParserBase<>() {
         @Override
         protected Parser<Rule> genParser() {
-            return seqParser.and(seqParser.seq()).map(rules ->
+            return seqParser.and(seqParser.seq0()).map(rules ->
                     foldLeft(rules._1(), rules._2(), Rule::cons)
             );
         }

@@ -10,14 +10,20 @@ java {
     targetCompatibility = JavaVersion.VERSION_21
 }
 
-gradle.projectsEvaluated {
-    tasks {
-        withType<JavaCompile> {
-            options.compilerArgs.add("-Xlint:unchecked")
-            options.compilerArgs.add("-Xlint:deprecation")
-        }
-    }
-}
+//tasks {
+//    withType<JavaCompile> {
+//        options.compilerArgs.add("-Xlint:unchecked")
+//    }
+//}
+//
+//gradle.projectsEvaluated {
+//    tasks {
+//        withType<JavaCompile> {
+//            options.compilerArgs.add("-Xlint:unchecked")
+//            options.compilerArgs.add("-Xlint:deprecation")
+//        }
+//    }
+//}
 
 allprojects {
     layout.buildDirectory.set(File("${rootProject.projectDir}/build/${project.name}"))
@@ -40,6 +46,13 @@ subprojects {
     tasks.withType<Test> {
         useJUnitPlatform()
     }
+
+    tasks {
+    withType<JavaCompile> {
+        options.compilerArgs.add("-Xlint:unchecked")
+        options.compilerArgs.add("-Xlint:deprecation")
+    }
+}
 
 }
 
