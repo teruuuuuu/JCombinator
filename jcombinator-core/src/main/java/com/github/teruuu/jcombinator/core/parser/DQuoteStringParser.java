@@ -5,7 +5,7 @@ public class DQuoteStringParser implements Parser<String> {
 
     public DQuoteStringParser() {
         this.parser = Parser.literal('"').andRight(
-                Parser.escape().or(Parser.literal('"').not()).seq().map(value -> String.join("", value))
+                Parser.escape().or(Parser.literal('"').not()).seq0().map(value -> String.join("", value))
         ).andLeft(Parser.literal('"'));
     }
 

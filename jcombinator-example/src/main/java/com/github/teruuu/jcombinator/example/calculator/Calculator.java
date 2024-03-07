@@ -1,7 +1,6 @@
 package com.github.teruuu.jcombinator.example.calculator;
 
 
-
 public sealed interface Calculator {
     record Bracket(Calculator value) implements Calculator {
         public Integer eval() {

@@ -136,8 +136,15 @@ public interface Parser<T> {
     }
 
 
-    default Parser<List<T>> seq() {
-        return new SeqParser<>(this);
+    static Parser<String> range(char c1, char c2) {
+        return new RangeParser(c1, c2);
+    }
+    default Parser<List<T>> seq0() {
+        return new Seq0Parser<>(this);
+    }
+
+    default Parser<List<T>> seq1() {
+        return new Seq1Parser<>(this);
     }
 
     static Parser<Void> skip(String literal) {
@@ -152,6 +159,9 @@ public interface Parser<T> {
         return new StopWardParser(literal);
     }
 
+    static Parser<Void> space() {
+        return new SpaceParser();
+    }
 
     default Parser<T> withSkipSpace() {
         return new SkipSpaceParser().andRight(this);

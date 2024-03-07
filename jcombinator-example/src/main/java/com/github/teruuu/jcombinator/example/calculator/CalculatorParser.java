@@ -45,7 +45,7 @@ public class CalculatorParser implements Parser<Calculator> {
                             v -> new Calculator.Mul(v, value._2()));
                     Parser<Function<Calculator, Calculator>> divGenParser = Parser.skip('/').withSkipSpace().and(factorParser).map(value ->
                             v -> new Calculator.Div(v, value._2()));
-                    return factorParser.and(mulGenParser.or(divGenParser).seq()).map(value ->
+                    return factorParser.and(mulGenParser.or(divGenParser).seq0()).map(value ->
                             foldLeft(value._1(), value._2(), (a, b) -> b.apply(a)));
                 }
             };
@@ -58,7 +58,7 @@ public class CalculatorParser implements Parser<Calculator> {
                     Parser<Function<Calculator, Calculator>> subGenParser = Parser.skip('-').withSkipSpace().and(termParser).map(value ->
                             (v) -> new Calculator.Sub(v, value._2()));
 
-                    return termParser.and(addGenParser.or(subGenParser).seq()).map(value ->
+                    return termParser.and(addGenParser.or(subGenParser).seq0()).map(value ->
                             foldLeft(value._1(), value._2(), (a, b) -> b.apply(a)));
                 }
             };
