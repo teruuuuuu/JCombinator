@@ -9,8 +9,6 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 
 /**
- *
- *
  * expression := select
  * select := connect '|' connect | connect
  * connect := seq | connect seq
@@ -136,24 +134,24 @@ public class RegExpParser implements Parser<Rule> {
                         }
                     }
                 }
-                return new ParseResult.Success<>((int)c0, location + 1);
+                return new ParseResult.Success<>((int) c0, location + 1);
             } else {
                 return new ParseResult.Failure<>("", location);
             }
         };
         final Parser<Rule> whichInner = charParser.andLeft(Parser.literal(MINUS)).and(charParser).
-                map(chars -> Rule.range((char)chars._1().intValue(), (char) chars._2().intValue())).or(charParser.map(c -> Rule.literal((char)c.intValue())));
+                map(chars -> Rule.range((char) chars._1().intValue(), (char) chars._2().intValue())).or(charParser.map(c -> Rule.literal((char) c.intValue())));
 
         @Override
         protected Parser<Rule> genParser() {
             return Parser.literal(LEFT_SQUARE_BRACKET).flatMap(leftBracket ->
                     Parser.literal(HAT).optional().flatMap(hatOpt ->
                             whichInner.and(whichInner.seq0()).flatMap(inner ->
-                                            Parser.literal(RIGHT_SQUARE_BRACKET).map(rightBracket ->
-                                                    hatOpt.isEmpty() ?
-                                                            foldLeft(inner._1(), inner._2(), Rule::select)
-                                                            : Rule.not(foldLeft(inner._1(), inner._2(), Rule::select))
-                                            )
+                                    Parser.literal(RIGHT_SQUARE_BRACKET).map(rightBracket ->
+                                            hatOpt.isEmpty() ?
+                                                    foldLeft(inner._1(), inner._2(), Rule::select)
+                                                    : Rule.not(foldLeft(inner._1(), inner._2(), Rule::select))
+                                    )
                             )
                     )
             );
@@ -192,7 +190,6 @@ public class RegExpParser implements Parser<Rule> {
             );
         }
     };
-
 
 
     Parser<Rule> parser = new ParserBase<>() {
@@ -238,16 +235,16 @@ public class RegExpParser implements Parser<Rule> {
                             or(Parser.literal(PLUS).map(a -> Rule.oneSeq(rule))).
                             or(Parser.literal(QUESTION).map(a -> Rule.option(rule))).
                             or(seqRangeParser.map(seqRange -> seqRange.apply(rule)).
-                            or((input, location) -> new ParseResult.Success<>(rule, location))));
+                                    or((input, location) -> new ParseResult.Success<>(rule, location))));
 
         }
     };
 
-    Parser<Function<Rule,Rule>> seqRangeParser = new ParserBase<>() {
+    Parser<Function<Rule, Rule>> seqRangeParser = new ParserBase<>() {
         final Parser<Integer> numberParser = (input, location) -> {
             int ret = 0;
             boolean isNumber = false;
-            while(true) {
+            while (true) {
                 if (input.length() == location || input.charAt(location) > '9' || input.charAt(location) < '0') {
                     break;
                 } else {
@@ -269,19 +266,19 @@ public class RegExpParser implements Parser<Rule> {
                 numberParser.flatMap(num1 ->
                         Parser.literal(',').flatMap(comma ->
                                 numberParser.map(num2 ->
-                                        (Function<Rule, Rule>)rule -> Rule.quantityMoreLess(rule, num1, num2)
-                        )
-                )).or(
+                                        (Function<Rule, Rule>) rule -> Rule.quantityMoreLess(rule, num1, num2)
+                                )
+                        )).or(
                         numberParser.flatMap(num1 ->
-                                        Parser.literal(',').map(comma ->
-                                                rule -> Rule.quantityMore(rule, num1)
-                                        )
-                )).or(
+                                Parser.literal(',').map(comma ->
+                                        rule -> Rule.quantityMore(rule, num1)
+                                )
+                        )).or(
                         Parser.literal(',').flatMap(comma ->
                                 numberParser.map(num2 ->
                                         rule -> Rule.quantityLess(rule, num2)
                                 )
-                )).or(
+                        )).or(
                         numberParser.map(num ->
                                 rule -> Rule.quantity(rule, num)
                         )
@@ -290,10 +287,10 @@ public class RegExpParser implements Parser<Rule> {
         @Override
         protected Parser<Function<Rule, Rule>> genParser() {
             return Parser.literal(LEFT_CURLY_BRACKET).flatMap(leftBracket ->
-                            quantityParser.flatMap(quantity ->
-                                    Parser.literal(RIGHT_CURLY_BRACKET).map(rightBracket ->
-                                            quantity)
-                            )
+                    quantityParser.flatMap(quantity ->
+                            Parser.literal(RIGHT_CURLY_BRACKET).map(rightBracket ->
+                                    quantity)
+                    )
             );
         }
     };

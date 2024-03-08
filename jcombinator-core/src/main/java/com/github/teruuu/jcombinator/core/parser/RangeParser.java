@@ -11,7 +11,7 @@ public class RangeParser implements Parser<String> {
 
     @Override
     public ParseResult<String> parse(String input, int location) {
-        if  (input.length() > location) {
+        if (input.length() > location) {
             char c = input.charAt(location);
             if (c >= c1 && c <= c2) {
                 return new ParseResult.Success<>(String.valueOf(c), location + 1);

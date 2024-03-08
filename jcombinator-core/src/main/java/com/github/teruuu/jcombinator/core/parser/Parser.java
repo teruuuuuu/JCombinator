@@ -139,6 +139,7 @@ public interface Parser<T> {
     static Parser<String> range(char c1, char c2) {
         return new RangeParser(c1, c2);
     }
+
     default Parser<List<T>> seq0() {
         return new Seq0Parser<>(this);
     }

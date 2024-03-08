@@ -48,11 +48,11 @@ subprojects {
     }
 
     tasks {
-    withType<JavaCompile> {
-        options.compilerArgs.add("-Xlint:unchecked")
-        options.compilerArgs.add("-Xlint:deprecation")
+        withType<JavaCompile> {
+            options.compilerArgs.add("-Xlint:unchecked")
+            options.compilerArgs.add("-Xlint:deprecation")
+        }
     }
-}
 
 }
 
