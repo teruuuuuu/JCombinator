@@ -202,6 +202,10 @@ public class Interpreter {
                     }
                 }
             }
+            case FunctionDefinition functionDefinition -> {
+                scope.addFuncEnv(functionDefinition.name(), new FunctionValue(functionDefinition));
+                return null;
+            }
             case Identifier identifier -> {
                 String name = identifier.name();
                 Optional<Map<String, Value>> envOpt = scope.findBinding(name);

@@ -34,17 +34,15 @@ public class ProgramParserTest {
         value = ((ParseResult.Success<Ast>) parseResult).value();
         assertEquals(value, new Program(List.of(new Assignment("a", new AstInt(1234)))));
 
-
         String programStr = """                
-                def fact(n, i) {
-                    if(i > 0) {
-                       n * fact(n, i - 1)
-                    } else {
-                        1
-                    }
-                }
-
                 def main() {
+                    def fact(n, i) {
+                        if(i > 0) {
+                           n * fact(n, i - 1)
+                        } else {
+                            1
+                        }
+                    }
                     fact(5, 3)
                 }
                 """;

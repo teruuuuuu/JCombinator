@@ -40,6 +40,10 @@ public record Scope(Map<String, Value> runtimeEnv, Map<String, Value> moduleEnv,
         functionEnvs.addFirst(env);
     }
 
+    public void addFuncEnv(String name, Value value) {
+        functionEnvs.getFirst().put(name, value);
+    }
+
     public void removeFuncEnv() {
         functionEnvs.removeFirst();
     }

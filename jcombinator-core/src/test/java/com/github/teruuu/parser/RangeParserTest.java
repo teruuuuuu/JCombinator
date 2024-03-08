@@ -14,7 +14,7 @@ public class RangeParserTest {
         Parser<String> parer = (
                 Parser.range('a', 'z').or(Parser.range('A', 'Z'))
         ).and(
-                Parser.range('a', 'z').or(Parser.range('A', 'Z')).or(Parser.range('0','9')).or(Parser.literal('_')).seq0()
+                Parser.range('a', 'z').or(Parser.range('A', 'Z')).or(Parser.range('0', '9')).or(Parser.literal('_')).seq0()
         ).map(e -> e._1() + String.join("", e._2())).withSkipSpace();
 
         ParseResult<String> parseResult = parer.parse("def main123_(){}", 3);
