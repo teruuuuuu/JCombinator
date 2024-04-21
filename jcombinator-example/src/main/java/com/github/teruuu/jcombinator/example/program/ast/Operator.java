@@ -6,6 +6,7 @@ public enum Operator {
     SUBTRACT("subtract", "-"),
     MULTIPLY("multiply", "*"),
     DIVIDE("divide", "/"),
+    SURPLUS("surplus", "%"),
     LESS_THAN("lessThan", "<"),
     LESS_EQUAL("lessEqual", "<="),
     GREATER_THAN("greaterThan", ">"),

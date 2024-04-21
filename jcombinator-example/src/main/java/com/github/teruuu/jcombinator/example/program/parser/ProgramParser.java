@@ -134,7 +134,7 @@ public class ProgramParser implements Parser<Ast> {
         }
     };
 
-    // term ::= factor ( ('*'|'/') factor)*
+    // term ::= factor ( ('*'|'/'|'%') factor)*
     final Parser<Ast> multitiveParser = new ParserBase<>() {
         @Override
         protected Parser<Ast> genParser() {
@@ -142,7 +142,9 @@ public class ProgramParser implements Parser<Ast> {
                     v -> new BinaryExpression(Operator.MULTIPLY, v, value._2()));
             Parser<Function<Ast, Ast>> subGennParser = Parser.skip('/').withSkipSpace().and(primaryParser).map(value ->
                     v -> new BinaryExpression(Operator.DIVIDE, v, value._2()));
-            return primaryParser.and(addGennParser.or(subGennParser).seq0()).map(value ->
+            Parser<Function<Ast, Ast>> subtractGenParser = Parser.skip('%').withSkipSpace().and(primaryParser).map(value ->
+                    v -> new BinaryExpression(Operator.SURPLUS, v, value._2()));
+            return primaryParser.and(addGennParser.or(subGennParser).or(subtractGenParser).seq0()).map(value ->
                     foldLeft(value._1(), value._2(), (a, b) -> b.apply(a)));
         }
     };
@@ -153,10 +155,19 @@ public class ProgramParser implements Parser<Ast> {
         protected Parser<Ast> genParser() {
             return (
                     Parser.skip('(').withSkipSpace()
-                            .andRight(additiveParser.withSkipSpace())
+                            .andRight(expressionParser.withSkipSpace())
                             .andLeft(Parser.skip(')').withSkipSpace()
                             )
             ).or(callFuncParser.or(intParser).or(strParser).or(identityParser).withSkipSpace());
+        }
+    };
+
+    final Parser<Ast> logicParer = new ParserBase<>() {
+        @Override
+        protected Parser<Ast> genParser() {
+            return barParser.or(andParser)
+                    .or(expressionParser)
+                    .withSkipSpace();
         }
     };
 
@@ -167,10 +178,9 @@ public class ProgramParser implements Parser<Ast> {
     final Parser<Ast> expressionParser = new ParserBase<>() {
         @Override
         protected Parser<Ast> genParser() {
-            return lessThanParser.or(lessEqualParser)
+            return barParser.or(andParser).or(lessThanParser).or(lessEqualParser)
                     .or(greaterThanParser).or(greaterEqualParser)
-                    .or(equalParser).or(andParser).or(barParser)
-                    .or(additiveParser)
+                    .or(equalParser).or(additiveParser)
                     .withSkipSpace();
         }
     };
@@ -230,7 +240,7 @@ public class ProgramParser implements Parser<Ast> {
     final Parser<Ast> equalParser = new ParserBase<>() {
         @Override
         protected Parser<Ast> genParser() {
-            return additiveParser.withSkipSpace().or(intParser).withSkipSpace().flatMap(lhs ->
+            return additiveParser.or(intParser).withSkipSpace().flatMap(lhs ->
                     Parser.skip("==").withSkipSpace().flatMap(symbol ->
                             additiveParser.withSkipSpace().or(intParser).withSkipSpace().map(rhs ->
                                     new BinaryExpression(Operator.EQUAL, lhs, rhs)
@@ -243,7 +253,7 @@ public class ProgramParser implements Parser<Ast> {
     final Parser<Ast> andParser = new ParserBase<>() {
         @Override
         protected Parser<Ast> genParser() {
-            return additiveParser.withSkipSpace().or(intParser).withSkipSpace().flatMap(lhs ->
+            return additiveParser.or(intParser).withSkipSpace().flatMap(lhs ->
                     Parser.skip("&&").withSkipSpace().flatMap(symbol ->
                             additiveParser.withSkipSpace().or(intParser).withSkipSpace().map(rhs ->
                                     new BinaryExpression(Operator.AND, lhs, rhs)
@@ -256,9 +266,9 @@ public class ProgramParser implements Parser<Ast> {
     final Parser<Ast> barParser = new ParserBase<>() {
         @Override
         protected Parser<Ast> genParser() {
-            return additiveParser.withSkipSpace().or(intParser).withSkipSpace().flatMap(lhs ->
+            return additiveParser.or(intParser).withSkipSpace().flatMap(lhs ->
                     Parser.skip("||").withSkipSpace().flatMap(symbol ->
-                            additiveParser.withSkipSpace().or(intParser).withSkipSpace().map(rhs ->
+                            additiveParser.or(intParser).withSkipSpace().map(rhs ->
                                     new BinaryExpression(Operator.BAR, lhs, rhs)
                             )
                     )

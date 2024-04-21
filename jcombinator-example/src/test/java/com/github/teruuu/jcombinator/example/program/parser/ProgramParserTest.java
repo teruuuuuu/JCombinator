@@ -52,5 +52,35 @@ public class ProgramParserTest {
         assertTrue(value instanceof Program);
         var result = interpreter.callMain((Program) value);
         assertEquals(Value.intValue(125), result);
+
+        programStr = """         
+                def fizzbuzz(n,i) {
+                    if(n >= i){
+                        if((i % 3 == 0) && (i % 5 == 0)){
+                            print("fizzbuzz")
+                        } else {
+                            if(i % 3 == 0) {
+                                print("fizz")
+                            } else {
+                                if(i % 5 == 0) {
+                                    print("buzz")
+                                } else {
+                                    print(i)
+                                }
+                            }
+                        }
+                        fizzbuzz(n, i+1)
+                    }
+                }
+                       
+                def main() {
+                    fizzbuzz(30,1)
+                }
+                """;
+        parseResult = parser.parse(programStr);
+        assert (parseResult instanceof ParseResult.Success<Ast>);
+        value = ((ParseResult.Success<Ast>) parseResult).value();
+        assertTrue(value instanceof Program);
+        result = interpreter.callMain((Program) value);
     }
 }

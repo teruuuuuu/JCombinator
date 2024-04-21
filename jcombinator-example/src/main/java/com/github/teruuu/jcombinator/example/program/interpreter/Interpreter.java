@@ -92,6 +92,15 @@ public class Interpreter {
                             throw new LanguageException(String.format("divide invalid argument[%s / %s].", lvalue, rvalue));
                         }
                     }
+                    case SURPLUS -> {
+                        var lvalue = interpret(binaryExpression.lhs(), scope);
+                        var rvalue = interpret(binaryExpression.rhs(), scope);
+                        if (lvalue instanceof Int && rvalue instanceof Int) {
+                            return Value.intValue(((Int) lvalue).value() % ((Int) rvalue).value());
+                        } else {
+                            throw new LanguageException(String.format("surplus invalid argument[%s å %s].", lvalue, rvalue));
+                        }
+                    }
                     case LESS_THAN -> {
                         var lvalue = interpret(binaryExpression.lhs(), scope);
                         var rvalue = interpret(binaryExpression.rhs(), scope);
@@ -141,15 +150,11 @@ public class Interpreter {
                         var lvalue = interpret(binaryExpression.lhs(), scope);
                         var rvalue = interpret(binaryExpression.rhs(), scope);
                         if (lvalue instanceof Bool && rvalue instanceof Bool) {
-                            return Value.bool(((Bool) lvalue).value() == ((Bool) rvalue).value());
-                        } else if (lvalue instanceof Char && rvalue instanceof Char) {
-                            return Value.bool(((Char) lvalue).v() == ((Char) rvalue).v());
+                            return Value.bool(((Bool) lvalue).value() && ((Bool) rvalue).value());
                         } else if (lvalue instanceof Int && rvalue instanceof Int) {
-                            return Value.bool(((Int) lvalue).value() == ((Int) rvalue).value());
-                        } else if (lvalue instanceof Str && rvalue instanceof Str) {
-                            return Value.bool(((Str) lvalue).value().equals(((Str) rvalue).value()));
+                            return Value.bool(((Int) lvalue).value() > 0 &&  ((Int) rvalue).value() > 0);
                         } else {
-                            throw new LanguageException(String.format("and invalid argument[%s == %s].", lvalue, rvalue));
+                            throw new LanguageException(String.format("and invalid argument[%s && %s].", lvalue, rvalue));
                         }
                     }
                     case BAR -> {
@@ -158,7 +163,7 @@ public class Interpreter {
                         if (lvalue instanceof Bool && rvalue instanceof Bool) {
                             return Value.bool(((Bool) lvalue).value() || ((Bool) rvalue).value());
                         } else {
-                            throw new LanguageException(String.format("bar invalid argument[%s == %s].", lvalue, rvalue));
+                            throw new LanguageException(String.format("bar invalid argument[%s || %s].", lvalue, rvalue));
                         }
                     }
                 }
