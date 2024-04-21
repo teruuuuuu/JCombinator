@@ -3,6 +3,7 @@ package com.github.teruuu.jcombinator.example.calculator;
 import com.github.teruuu.jcombinator.core.parser.ParseResult;
 import com.github.teruuu.jcombinator.core.parser.Parser;
 import com.github.teruuu.jcombinator.core.parser.ParserBase;
+import com.github.teruuu.jcombinator.core.parser.ParserContext;
 
 import java.util.List;
 import java.util.function.BiFunction;
@@ -71,14 +72,14 @@ public class CalculatorParser implements Parser<Calculator> {
             }
 
             @Override
-            public ParseResult<Calculator> parse(String input, int location) {
-                return exprParser.parse(input, location);
+            public ParseResult<Calculator> parse(String input, ParserContext context) {
+                return exprParser.parse(input, context);
             }
         };
     }
 
     @Override
-    public ParseResult<Calculator> parse(String input, int location) {
-        return parser.parse(input, location);
+    public ParseResult<Calculator> parse(String input, ParserContext context) {
+        return parser.parse(input, context);
     }
 }

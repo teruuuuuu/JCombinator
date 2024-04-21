@@ -13,20 +13,21 @@ public class AndParser<X, Y> implements Parser<Tuple<X, Y>> {
     }
 
     @Override
-    public ParseResult<Tuple<X, Y>> parse(String input, int location) {
-        switch (firstParser.parse(input, location)) {
+    public ParseResult<Tuple<X, Y>> parse(String input, ParserContext context) {
+        switch (firstParser.parse(input, context)) {
             case ParseResult.Success<X> fsuccess -> {
-                switch (secondParser.parse(input, fsuccess.next())) {
+                switch (secondParser.parse(input, fsuccess.context())) {
                     case ParseResult.Success<Y> ssuccess -> {
-                        return new ParseResult.Success<>(new Tuple<>(fsuccess.value(), ssuccess.value()), ssuccess.next());
+                        return new ParseResult.Success<>(new Tuple<>(fsuccess.value(), ssuccess.value()), ssuccess.context());
                     }
                     case ParseResult.Failure<Y> sfailure -> {
-                        return new ParseResult.Failure<>(sfailure.message(), sfailure.next());
+                        return new ParseResult.Failure<>(
+                                fsuccess.context().newError(sfailure.context().lastError()));
                     }
                 }
             }
             case ParseResult.Failure<X> ffailure -> {
-                return new ParseResult.Failure<>(ffailure.message(), ffailure.next());
+                return new ParseResult.Failure<>(ffailure.context());
             }
         }
     }

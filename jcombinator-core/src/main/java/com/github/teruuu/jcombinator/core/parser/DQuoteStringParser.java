@@ -10,7 +10,7 @@ public class DQuoteStringParser implements Parser<String> {
     }
 
     @Override
-    public ParseResult<String> parse(String input, int location) {
-        return parser.parse(input, location);
+    public ParseResult<String> parse(String input, ParserContext context) {
+        return parser.parse(input, context);
     }
 }

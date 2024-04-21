@@ -14,10 +14,10 @@ import java.util.function.Function;
  */
 public interface Parser<T> {
 
-    ParseResult<T> parse(String input, int location);
+    ParseResult<T> parse(String input, ParserContext parserContext);
 
     default ParseResult<T> parse(String input) {
-        return parse(input, 0);
+        return parse(input, ParserContext.init());
     }
 
     default <X> Parser<Tuple<T, X>> and(Parser<X> parser) {
@@ -66,13 +66,13 @@ public interface Parser<T> {
 
     default <X> Parser<X> flatMap(Function<T, Parser<X>> flatMapFunc) {
         Parser<T> capture = this;
-        return (input, location) -> {
-            switch (capture.parse(input, location)) {
+        return (input, context) -> {
+            switch (capture.parse(input, context)) {
                 case ParseResult.Success<T> success -> {
-                    return flatMapFunc.apply(success.value()).parse(input, success.next());
+                    return flatMapFunc.apply(success.value()).parse(input, success.context());
                 }
                 case ParseResult.Failure<T> failure -> {
-                    return new ParseResult.Failure<>(failure.message(), failure.next());
+                    return new ParseResult.Failure<>(failure.context());
                 }
             }
         };
@@ -98,10 +98,10 @@ public interface Parser<T> {
         return (input, location) -> {
             switch (this.parse(input, location)) {
                 case ParseResult.Success<T> success -> {
-                    return new ParseResult.Success<>(mapFunc.apply(success.value()), success.next());
+                    return new ParseResult.Success<>(mapFunc.apply(success.value()), success.context());
                 }
                 case ParseResult.Failure<T> failure -> {
-                    return new ParseResult.Failure<>(failure.message(), failure.next());
+                    return new ParseResult.Failure<>(failure.context());
                 }
             }
         };

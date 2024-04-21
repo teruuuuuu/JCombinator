@@ -11,21 +11,22 @@ public class Seq1Parser<T> implements Parser<List<T>> {
     }
 
     @Override
-    public ParseResult<List<T>> parse(String input, int location) {
+    public ParseResult<List<T>> parse(String input, ParserContext context) {
         List<T> ret = new ArrayList<>();
+        ParserContext nextContext = context;
         while (true) {
-            ParseResult<T> parseResult = parser.parse(input, location);
+            ParseResult<T> parseResult = parser.parse(input, nextContext);
             if (parseResult instanceof ParseResult.Success<T> success) {
                 ret.add(success.value());
-                location = success.next();
+                nextContext = success.context();
             } else {
                 break;
             }
         }
         if (!ret.isEmpty()) {
-            return new ParseResult.Success<>(ret, location);
+            return new ParseResult.Success<>(ret, nextContext);
         } else {
-            return new ParseResult.Failure<>("", location);
+            return new ParseResult.Failure<>(nextContext);
         }
     }
 }

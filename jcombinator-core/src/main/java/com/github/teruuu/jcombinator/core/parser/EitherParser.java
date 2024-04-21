@@ -2,8 +2,6 @@ package com.github.teruuu.jcombinator.core.parser;
 
 import com.github.teruuu.jcombinator.core.parser.type.Either;
 
-import java.util.List;
-
 public class EitherParser<X, Y> implements Parser<Either<X, Y>> {
 
     private final Parser<X> firstParser;
@@ -15,18 +13,20 @@ public class EitherParser<X, Y> implements Parser<Either<X, Y>> {
     }
 
     @Override
-    public ParseResult<Either<X, Y>> parse(String input, int location) {
-        switch (firstParser.parse(input, location)) {
+    public ParseResult<Either<X, Y>> parse(String input, ParserContext context) {
+        switch (firstParser.parse(input, context)) {
             case ParseResult.Success<X> fsuccess -> {
-                return new ParseResult.Success<>(new Either.Left<>(fsuccess.value()), fsuccess.next());
+                return new ParseResult.Success<>(new Either.Left<>(fsuccess.value()), fsuccess.context());
             }
             case ParseResult.Failure<X> ffailure -> {
-                switch (secondParser.parse(input, location)) {
+                switch (secondParser.parse(input, context)) {
                     case ParseResult.Success<Y> ssuccess -> {
-                        return new ParseResult.Success<>(new Either.Right<>(ssuccess.value()), ssuccess.next());
+                        return new ParseResult.Success<>(new Either.Right<>(ssuccess.value()), ssuccess.context());
                     }
                     case ParseResult.Failure<Y> sfailure -> {
-                        return new ParseResult.Failure<>(String.join(",", List.of(ffailure.message(), sfailure.message())), location);
+
+                        return new ParseResult.Failure<>(
+                                context.newError(ffailure.context().lastError()).newError(sfailure.context().lastError()));
                     }
                 }
             }

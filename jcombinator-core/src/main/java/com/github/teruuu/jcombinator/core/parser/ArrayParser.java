@@ -15,7 +15,7 @@ public class ArrayParser<T, X, Y, Z> implements Parser<List<T>> {
     }
 
     @Override
-    public ParseResult<List<T>> parse(String input, int location) {
-        return this.parser.parse(input, location);
+    public ParseResult<List<T>> parse(String input, ParserContext context) {
+        return this.parser.parse(input, context);
     }
 }

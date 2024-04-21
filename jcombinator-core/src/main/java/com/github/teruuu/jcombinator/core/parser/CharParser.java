@@ -9,11 +9,14 @@ public class CharParser implements Parser<String> {
     }
 
     @Override
-    public ParseResult<String> parse(String input, int location) {
-        if (input.length() > location && input.charAt(location) == c) {
-            return new ParseResult.Success<>(String.valueOf(c), location + 1);
+    public ParseResult<String> parse(String input, ParserContext context) {
+        if (input.length() > context.location() && input.charAt(context.location()) == c) {
+            return new ParseResult.Success<>(String.valueOf(c), context.nextLocation(context.location() + 1));
         } else {
-            return new ParseResult.Failure<>(String.format("not (char=[%s], loc=[%d]), input=%s", c, location, input), location);
+            String message = String.format("not (char=[%s], loc=[%d]), input=%s", c, context.location(), input);
+
+
+            return new ParseResult.Failure<>(context.newError(context.location(), message));
         }
     }
 }

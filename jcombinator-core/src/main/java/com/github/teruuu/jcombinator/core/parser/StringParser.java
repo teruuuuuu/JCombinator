@@ -8,11 +8,11 @@ public class StringParser implements Parser<String> {
     }
 
     @Override
-    public ParseResult<String> parse(String input, int location) {
-        if (input.startsWith(literal, location)) {
-            return new ParseResult.Success<>(literal, location + literal.length());
+    public ParseResult<String> parse(String input, ParserContext context) {
+        if (input.startsWith(literal, context.location())) {
+            return new ParseResult.Success<>(literal, context.moveLocation(literal.length()));
         } else {
-            return new ParseResult.Failure<>(String.format("not (literal=[%s], loc=[%d]), input=%s", literal, location, input), location);
+            return new ParseResult.Failure<>(context.newError(String.format("not (literal=[%s], loc=[%d]), input=%s", literal, context.location(), input)));
         }
     }
 }

@@ -2,8 +2,9 @@ package com.github.teruuu.jcombinator.core.parser;
 
 public class SkipSpaceParser implements Parser<Void> {
     @Override
-    public ParseResult<Void> parse(String input, int location) {
+    public ParseResult<Void> parse(String input, ParserContext context) {
         char c;
+        int location = context.location();
         while (true) {
             if (input.length() == location) {
                 break;
@@ -16,6 +17,6 @@ public class SkipSpaceParser implements Parser<Void> {
                 break;
             }
         }
-        return new ParseResult.Success<>(null, location);
+        return new ParseResult.Success<>(null, context.nextLocation(location));
     }
 }

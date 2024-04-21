@@ -8,11 +8,11 @@ public class SkipParser implements Parser<Void> {
     }
 
     @Override
-    public ParseResult<Void> parse(String input, int location) {
-        if (input.startsWith(literal, location)) {
-            return new ParseResult.Success<>(null, location + literal.length());
+    public ParseResult<Void> parse(String input, ParserContext context) {
+        if (input.startsWith(literal, context.location())) {
+            return new ParseResult.Success<>(null, context.moveLocation(literal.length()));
         } else {
-            return new ParseResult.Failure<>(String.format("not (literal=[%s], loc=[%d]), input=%s", literal, location, input), location);
+            return new ParseResult.Failure<>(context.newError(String.format("not (literal=[%s], loc=[%d]), input=%s", literal, context.location(), input)));
         }
     }
 }

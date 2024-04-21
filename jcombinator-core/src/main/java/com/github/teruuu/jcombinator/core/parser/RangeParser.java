@@ -10,16 +10,16 @@ public class RangeParser implements Parser<String> {
     }
 
     @Override
-    public ParseResult<String> parse(String input, int location) {
-        if (input.length() > location) {
-            char c = input.charAt(location);
+    public ParseResult<String> parse(String input, ParserContext context) {
+        if (input.length() > context.location()) {
+            char c = input.charAt(context.location());
             if (c >= c1 && c <= c2) {
-                return new ParseResult.Success<>(String.valueOf(c), location + 1);
+                return new ParseResult.Success<>(String.valueOf(c), context.moveLocation(1));
             } else {
-                return new ParseResult.Failure<>("", location);
+                return new ParseResult.Failure<>(context);
             }
         } else {
-            return new ParseResult.Failure<>("", location);
+            return new ParseResult.Failure<>(context);
         }
     }
 }

@@ -100,7 +100,7 @@ public class Main {
 
             }
             case ParseResult.Failure<Ast> failure -> {
-                throw new RuntimeException("compile failed:" + failure.message());
+                throw new RuntimeException("compile failed:" + failure.context().errors());
             }
         }
     }
