@@ -1,5 +1,7 @@
 package com.github.teruuu.jcombinator.core.parser;
 
+import com.github.teruuu.jcombinator.core.parser.type.Tuple;
+
 public class NotParser<T> implements Parser<String> {
     private final Parser<T> parser;
 
@@ -8,16 +10,19 @@ public class NotParser<T> implements Parser<String> {
     }
 
     @Override
-    public ParseResult<String> parse(String input, int location) {
-        if (input.length() == location) {
-            return new ParseResult.Failure<>("reached end.", location);
+    public Tuple<ParseContext, ParseResult<String>> parse(String input, ParseContext context) {
+        if (input.length() == context.location()) {
+            return new Tuple<>(context.newError("not", "reach end"), new ParseResult.Failure<>());
         } else {
-            switch (parser.parse(input, location)) {
+            Tuple<ParseContext, ParseResult<T>> fParseResultState = parser.parse(input, context);
+            ParseContext newContext = fParseResultState._1();
+            ParseResult<T> parseResult = fParseResultState._2();
+            switch (parseResult) {
                 case ParseResult.Failure<T> a -> {
-                    return new ParseResult.Success<>(input.substring(location, location + 1), location + 1);
+                    return new Tuple<>(context.move(1), new ParseResult.Success<>(input.substring(context.location(), context.location() + 1)));
                 }
                 case ParseResult.Success<T> success -> {
-                    return new ParseResult.Failure<>("", location);
+                    return new Tuple<>(context.newError("not", "parse success"), new ParseResult.Failure<>());
                 }
             }
         }

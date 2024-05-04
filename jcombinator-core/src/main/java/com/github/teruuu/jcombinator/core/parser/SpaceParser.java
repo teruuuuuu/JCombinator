@@ -1,24 +1,27 @@
 package com.github.teruuu.jcombinator.core.parser;
 
+import com.github.teruuu.jcombinator.core.parser.type.Tuple;
+
 public class SpaceParser implements Parser<Void> {
     @Override
-    public ParseResult<Void> parse(String input, int location) {
+    public Tuple<ParseContext, ParseResult<Void>> parse(String input, ParseContext context) {
+        int location = context.location();
         if (input.length() > location) {
             char c1 = input.charAt(location);
             if (c1 == ' ' || c1 == '\t' || c1 == '\n') {
-                return new ParseResult.Success<>(null, location + 1);
+                return new Tuple<>(context.move(1), new ParseResult.Success<>(null));
             } else if (c1 == '\r' && input.length() > location + 1) {
                 char c2 = input.charAt(location + 1);
                 if (c2 == '\n') {
-                    return new ParseResult.Success<>(null, location + 2);
+                    return new Tuple<>(context.move(2), new ParseResult.Success<>(null));
                 } else {
-                    return new ParseResult.Failure<>("", location);
+                    return new Tuple<>(context.newError("space", "not space"), new ParseResult.Failure<>());
                 }
             } else {
-                return new ParseResult.Failure<>("", location);
+                return new Tuple<>(context.newError("space", "not space"), new ParseResult.Failure<>());
             }
         } else {
-            return new ParseResult.Failure<>("", location);
+            return new Tuple<>(context.newError("space", "not space"), new ParseResult.Failure<>());
         }
     }
 }

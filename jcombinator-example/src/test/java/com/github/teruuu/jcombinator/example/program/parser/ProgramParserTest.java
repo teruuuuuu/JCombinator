@@ -1,7 +1,10 @@
 package com.github.teruuu.jcombinator.example.program.parser;
 
+import com.github.teruuu.jcombinator.core.parser.ParseContext;
+import com.github.teruuu.jcombinator.core.parser.ParseError;
 import com.github.teruuu.jcombinator.core.parser.ParseResult;
 import com.github.teruuu.jcombinator.core.parser.Parser;
+import com.github.teruuu.jcombinator.core.parser.type.Tuple;
 import com.github.teruuu.jcombinator.example.program.ast.Assignment;
 import com.github.teruuu.jcombinator.example.program.ast.Ast;
 import com.github.teruuu.jcombinator.example.program.ast.AstInt;
@@ -21,15 +24,35 @@ public class ProgramParserTest {
 
     @Test
     void test() {
+        ParseError parseError1 = ParseError.newError(0, "A", "abc");
+        ParseError parseError11 = ParseError.newError(1, "A-1", "abc");
+        ParseError parseError12 = ParseError.newError(2, "A-2", "abc");
+        ParseError parseError121 = ParseError.newError(3, "A-2-1", "abc");
+        ParseError parseError122 = ParseError.newError(3, "A-2-2", "abc");
+
+        ParseError error = parseError1.addError(
+                parseError11
+        ).addError(
+                parseError12.addError(
+                        parseError121
+                ).addError(
+                        parseError122
+                )
+        );
+
+
+
         Interpreter interpreter = new Interpreter();
         Parser<Ast> parser = new ProgramParser();
-        ParseResult<Ast> parseResult = parser.parse("print(\"hello world.\")");
+        Tuple<ParseContext, ParseResult<Ast>> parseResultState = parser.parse("print(\"hello world.\")");
+        ParseResult<Ast> parseResult = parseResultState._2();
         assert (parseResult instanceof ParseResult.Success<Ast>);
         Ast value = ((ParseResult.Success<Ast>) parseResult).value();
         assertEquals(value, new Program(List.of(new FunctionCall("print", List.of(new AstString("hello world."))))));
 
 
-        parseResult = parser.parse("var a = 1234");
+        parseResultState = parser.parse("var a = 1234");
+        parseResult = parseResultState._2();
         assert (parseResult instanceof ParseResult.Success<Ast>);
         value = ((ParseResult.Success<Ast>) parseResult).value();
         assertEquals(value, new Program(List.of(new Assignment("a", new AstInt(1234)))));
@@ -46,7 +69,8 @@ public class ProgramParserTest {
                     fact(5, 3)
                 }
                 """;
-        parseResult = parser.parse(programStr);
+        parseResultState = parser.parse(programStr);
+        parseResult = parseResultState._2();
         assert (parseResult instanceof ParseResult.Success<Ast>);
         value = ((ParseResult.Success<Ast>) parseResult).value();
         assertTrue(value instanceof Program);
@@ -77,7 +101,8 @@ public class ProgramParserTest {
                     fizzbuzz(30,1)
                 }
                 """;
-        parseResult = parser.parse(programStr);
+        parseResultState = parser.parse(programStr);
+        parseResult = parseResultState._2();
         assert (parseResult instanceof ParseResult.Success<Ast>);
         value = ((ParseResult.Success<Ast>) parseResult).value();
         assertTrue(value instanceof Program);

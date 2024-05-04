@@ -3,28 +3,28 @@ package com.github.teruuu.jcombinator.core.parser;
 import java.util.function.Function;
 
 public sealed interface ParseResult<T> {
-    record Success<T>(T value, int next) implements ParseResult<T> {
+    record Success<T>(T value) implements ParseResult<T> {
         @Override
         public <U> ParseResult<U> map(Function<T, U> fn) {
-            return new Success<U>(fn.apply(value), next);
+            return new Success<U>(fn.apply(value));
         }
 
         @Override
         public String toString() {
-            return "Success(" + value + ", " + next + ")";
+            return "Success(" + value + ")";
         }
     }
 
-    record Failure<T>(String message, int next) implements ParseResult<T> {
+    record Failure<T>() implements ParseResult<T> {
 
         @Override
         public <U> ParseResult<U> map(Function<T, U> fn) {
-            return new Failure<>(this.message, this.next);
+            return new Failure<>();
         }
 
         @Override
         public String toString() {
-            return "Failure(" + message + ", " + next;
+            return "Failure()";
         }
     }
 

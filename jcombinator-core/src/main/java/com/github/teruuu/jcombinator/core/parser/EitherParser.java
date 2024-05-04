@@ -1,6 +1,7 @@
 package com.github.teruuu.jcombinator.core.parser;
 
 import com.github.teruuu.jcombinator.core.parser.type.Either;
+import com.github.teruuu.jcombinator.core.parser.type.Tuple;
 
 import java.util.List;
 
@@ -15,18 +16,32 @@ public class EitherParser<X, Y> implements Parser<Either<X, Y>> {
     }
 
     @Override
-    public ParseResult<Either<X, Y>> parse(String input, int location) {
-        switch (firstParser.parse(input, location)) {
+    public Tuple<ParseContext, ParseResult<Either<X, Y>>> parse(String input, ParseContext context) {
+        Tuple<ParseContext, ParseResult<X>> fParseResultState = firstParser.parse(input, context);
+        ParseContext fContext = fParseResultState._1();
+        ParseResult<X> fParseResult = fParseResultState._2();
+        switch (fParseResult) {
             case ParseResult.Success<X> fsuccess -> {
-                return new ParseResult.Success<>(new Either.Left<>(fsuccess.value()), fsuccess.next());
+                return new Tuple<>(
+                        context.newLocation(fContext.location()).addError(fContext),
+                        new ParseResult.Success<>(new Either.Left<>(fsuccess.value())));
             }
             case ParseResult.Failure<X> ffailure -> {
-                switch (secondParser.parse(input, location)) {
+                Tuple<ParseContext, ParseResult<Y>> sParseResultState = secondParser.parse(input, context);
+                ParseContext sContext = sParseResultState._1();
+                ParseResult<Y> sParseResult = sParseResultState._2();
+                switch (sParseResult) {
                     case ParseResult.Success<Y> ssuccess -> {
-                        return new ParseResult.Success<>(new Either.Right<>(ssuccess.value()), ssuccess.next());
+                        return new Tuple<>(
+                                sContext,
+                                new ParseResult.Success<>(new Either.Right<>(ssuccess.value()))
+                        );
                     }
                     case ParseResult.Failure<Y> sfailure -> {
-                        return new ParseResult.Failure<>(String.join(",", List.of(ffailure.message(), sfailure.message())), location);
+                        return new Tuple<>(
+                                context.newError("either", "no valid parser").addError(fContext).addError(sContext),
+                                new ParseResult.Failure<>()
+                        );
                     }
                 }
             }

@@ -1,7 +1,9 @@
 package com.github.teruuu.jcombinator.regexp.vm;
 
+import com.github.teruuu.jcombinator.core.parser.ParseContext;
 import com.github.teruuu.jcombinator.core.parser.ParseResult;
 import com.github.teruuu.jcombinator.core.parser.Parser;
+import com.github.teruuu.jcombinator.core.parser.type.Tuple;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,7 +15,9 @@ public class RegExp {
 
     public static Optional<RegExp> of(String regExp) {
         Parser<Rule> parser = new RegExpParser();
-        ParseResult<Rule> parseResult = parser.parse(regExp);
+        Tuple<ParseContext, ParseResult<Rule>> parseResultState = parser.parse(regExp);
+        ParseContext parseContext = parseResultState._1();
+        ParseResult<Rule> parseResult = parseResultState._2();
 
         switch (parseResult) {
             case ParseResult.Success<Rule> success -> {

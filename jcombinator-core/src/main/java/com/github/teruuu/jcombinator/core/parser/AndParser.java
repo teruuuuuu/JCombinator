@@ -13,20 +13,30 @@ public class AndParser<X, Y> implements Parser<Tuple<X, Y>> {
     }
 
     @Override
-    public ParseResult<Tuple<X, Y>> parse(String input, int location) {
-        switch (firstParser.parse(input, location)) {
+    public Tuple<ParseContext, ParseResult<Tuple<X, Y>>> parse(String input, ParseContext context) {
+        Tuple<ParseContext, ParseResult<X>> fParseResultState = firstParser.parse(input, context);
+        ParseContext fContext = fParseResultState._1();
+        ParseResult<X> fParseResult = fParseResultState._2();
+        switch (fParseResult) {
             case ParseResult.Success<X> fsuccess -> {
-                switch (secondParser.parse(input, fsuccess.next())) {
+                Tuple<ParseContext, ParseResult<Y>> sParseResultState = secondParser.parse(input, context.newLocation(fContext.location()));
+                ParseContext sContext = sParseResultState._1();
+                ParseResult<Y> sParseResult = sParseResultState._2();
+
+                switch (sParseResult) {
                     case ParseResult.Success<Y> ssuccess -> {
-                        return new ParseResult.Success<>(new Tuple<>(fsuccess.value(), ssuccess.value()), ssuccess.next());
+                        return new Tuple<>(sContext,
+                                new ParseResult.Success<>(new Tuple<>(fsuccess.value(), ssuccess.value())));
                     }
                     case ParseResult.Failure<Y> sfailure -> {
-                        return new ParseResult.Failure<>(sfailure.message(), sfailure.next());
+                        return new Tuple<>(
+                                context.newError("and", "and parse error").addError(fContext).addError(sContext),
+                                new ParseResult.Failure<>());
                     }
                 }
             }
             case ParseResult.Failure<X> ffailure -> {
-                return new ParseResult.Failure<>(ffailure.message(), ffailure.next());
+                return new Tuple<>(fContext, new ParseResult.Failure<>());
             }
         }
     }

@@ -1,7 +1,9 @@
 package com.github.teruuu.jcombinator.example.program;
 
+import com.github.teruuu.jcombinator.core.parser.ParseContext;
 import com.github.teruuu.jcombinator.core.parser.ParseResult;
 import com.github.teruuu.jcombinator.core.parser.Parser;
+import com.github.teruuu.jcombinator.core.parser.type.Tuple;
 import com.github.teruuu.jcombinator.example.program.ast.Ast;
 import com.github.teruuu.jcombinator.example.program.ast.Program;
 import com.github.teruuu.jcombinator.example.program.interpreter.Interpreter;
@@ -88,7 +90,11 @@ public class Main {
 
     static void run(String input) {
         Parser<Ast> parser = new ProgramParser();
-        switch (parser.parse(input)) {
+        Tuple<ParseContext, ParseResult<Ast>> parseResultState = parser.parse(input);
+        ParseContext context = parseResultState._1();
+        ParseResult<Ast> parseResult = parseResultState._2();
+
+        switch (parseResult) {
             case ParseResult.Success<Ast> success -> {
 
                 if (Objects.requireNonNull(success.value()) instanceof Program program) {
@@ -100,7 +106,7 @@ public class Main {
 
             }
             case ParseResult.Failure<Ast> failure -> {
-                throw new RuntimeException("compile failed:" + failure.message());
+                throw new RuntimeException("compile failed:" + context);
             }
         }
     }

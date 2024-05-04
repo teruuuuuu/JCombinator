@@ -1,5 +1,7 @@
 package com.github.teruuu.jcombinator.core.parser;
 
+import com.github.teruuu.jcombinator.core.parser.type.Tuple;
+
 public class StringParser implements Parser<String> {
     final String literal;
 
@@ -8,11 +10,15 @@ public class StringParser implements Parser<String> {
     }
 
     @Override
-    public ParseResult<String> parse(String input, int location) {
-        if (input.startsWith(literal, location)) {
-            return new ParseResult.Success<>(literal, location + literal.length());
+    public Tuple<ParseContext, ParseResult<String>> parse(String input, ParseContext context) {
+        if (input.startsWith(literal, context.location())) {
+            return new Tuple<>(context.move(literal.length()), new ParseResult.Success<>(literal));
         } else {
-            return new ParseResult.Failure<>(String.format("not (literal=[%s], loc=[%d]), input=%s", literal, location, input), location);
+            return new Tuple<>(
+                    context.newError(
+                            "string",
+                            String.format("not (literal=[%s], loc=[%d]), input=%s", literal, context.location(), input)),
+                    new ParseResult.Failure<>());
         }
     }
 }
