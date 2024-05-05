@@ -24,24 +24,6 @@ public class ProgramParserTest {
 
     @Test
     void test() {
-        ParseError parseError1 = ParseError.newError(0, "A", "abc");
-        ParseError parseError11 = ParseError.newError(1, "A-1", "abc");
-        ParseError parseError12 = ParseError.newError(2, "A-2", "abc");
-        ParseError parseError121 = ParseError.newError(3, "A-2-1", "abc");
-        ParseError parseError122 = ParseError.newError(3, "A-2-2", "abc");
-
-        ParseError error = parseError1.addError(
-                parseError11
-        ).addError(
-                parseError12.addError(
-                        parseError121
-                ).addError(
-                        parseError122
-                )
-        );
-
-
-
         Interpreter interpreter = new Interpreter();
         Parser<Ast> parser = new ProgramParser();
         Tuple<ParseContext, ParseResult<Ast>> parseResultState = parser.parse("print(\"hello world.\")");
@@ -101,7 +83,7 @@ public class ProgramParserTest {
                     fizzbuzz(30,1)
                 }
                 """;
-        parseResultState = parser.parse(programStr);
+        parseResultState = parser.parse(programStr, ParseContext.context("program", 0));
         parseResult = parseResultState._2();
         assert (parseResult instanceof ParseResult.Success<Ast>);
         value = ((ParseResult.Success<Ast>) parseResult).value();

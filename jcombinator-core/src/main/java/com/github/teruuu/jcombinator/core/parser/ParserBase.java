@@ -18,6 +18,11 @@ public abstract class ParserBase<T> implements Parser<T> {
     }
 
     @Override
+    public Tuple<ParseContext, ParseResult<T>> parse(String input) {
+        return parse(input, ParseContext.context(label, 0));
+    }
+
+    @Override
     public Tuple<ParseContext, ParseResult<T>> parse(String input, ParseContext context) {
         if (parser == null) {
             if (label != null) {

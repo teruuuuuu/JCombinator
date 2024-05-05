@@ -90,7 +90,7 @@ public class Main {
 
     static void run(String input) {
         Parser<Ast> parser = new ProgramParser();
-        Tuple<ParseContext, ParseResult<Ast>> parseResultState = parser.parse(input);
+        Tuple<ParseContext, ParseResult<Ast>> parseResultState = parser.parse("program", input);
         ParseContext context = parseResultState._1();
         ParseResult<Ast> parseResult = parseResultState._2();
 

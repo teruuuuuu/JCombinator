@@ -17,7 +17,10 @@ public interface Parser<T> {
     Tuple<ParseContext, ParseResult<T>> parse(String input, ParseContext parseContext);
 
     default Tuple<ParseContext, ParseResult<T>> parse(String input) {
-        return parse(input, ParseContext.context(0));
+        return parse(input, ParseContext.context(null, 0));
+    }
+    default Tuple<ParseContext, ParseResult<T>> parse(String label, String input) {
+        return parse(input, ParseContext.context(label, 0));
     }
 
     default <X> Parser<Tuple<T, X>> and(Parser<X> parser) {
