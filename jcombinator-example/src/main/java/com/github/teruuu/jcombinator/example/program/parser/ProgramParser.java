@@ -1,8 +1,10 @@
 package com.github.teruuu.jcombinator.example.program.parser;
 
+import com.github.teruuu.jcombinator.core.parser.ParseContext;
 import com.github.teruuu.jcombinator.core.parser.ParseResult;
 import com.github.teruuu.jcombinator.core.parser.Parser;
 import com.github.teruuu.jcombinator.core.parser.ParserBase;
+import com.github.teruuu.jcombinator.core.parser.type.Tuple;
 import com.github.teruuu.jcombinator.example.program.ast.Assignment;
 import com.github.teruuu.jcombinator.example.program.ast.Ast;
 import com.github.teruuu.jcombinator.example.program.ast.AstBool;
@@ -29,14 +31,14 @@ public class ProgramParser implements Parser<Ast> {
             Parser.range('a', 'z').or(Parser.range('A', 'Z'))
     ).and(
             Parser.range('a', 'z').or(Parser.range('A', 'Z')).or(Parser.range('0', '9')).or(Parser.literal('_')).seq0()
-    ).flatMap(e -> (input, location) -> {
+    ).flatMap(e -> (input, context) -> {
         String symbol = e._1() + String.join("", e._2());
-        if (symbol.equals("if") || symbol.equals("else") || symbol.equals("var")
+        if (symbol.equals("if") || symbol.equals("else") || symbol.equals("var") || symbol.equals("(") || symbol.equals(")")
                 || symbol.equals("{") || symbol.equals("}") || symbol.equals("<") || symbol.equals("<=")
                 || symbol.equals(">") || symbol.equals(">=")) {
-            return new ParseResult.Failure<>("yoyakugo", location);
+            return new Tuple<>(context.newError("yoyakugo", "yoyakugo found"), new ParseResult.Failure<>());
         } else {
-            return new ParseResult.Success<>(symbol, location);
+            return new Tuple<>(context, new ParseResult.Success<>(symbol));
         }
     }).withSkipSpace();
 
@@ -66,7 +68,7 @@ public class ProgramParser implements Parser<Ast> {
     };
 
     // callFunc ::= symbol '('　(value (',' value)*)? ')'
-    final Parser<Ast> callFuncParser = new ParserBase<>() {
+    final Parser<Ast> callFuncParser = new ParserBase<>("program", "callFunc") {
         @Override
         protected Parser<Ast> genParser() {
             return symbolParser.withSkipSpace().and(
@@ -277,7 +279,7 @@ public class ProgramParser implements Parser<Ast> {
     };
 
     // if ::= "if" '(' value ')' '{' (assign|callFunc|funcDef)* value? '}' ("else" '{' (assign|callFunc|funcDef)* value? '}')?
-    final Parser<Ast> ifParser = new ParserBase<>() {
+    final Parser<Ast> ifParser = new ParserBase<>("program", "if") {
         @Override
         protected Parser<Ast> genParser() {
             return Parser.skip("if").withSkipSpace().andLeft(Parser.literal('(')).withSkipSpace().flatMap(codStart ->
@@ -301,7 +303,7 @@ public class ProgramParser implements Parser<Ast> {
     };
 
     // funcDef ::= "def" identity '(' (identity (',' identity)*)? ')' '{' (assign|callFunc|funcDef)* value? '}'
-    final Parser<Ast> funcDefParser = new ParserBase<>() {
+    final Parser<Ast> funcDefParser = new ParserBase<>("program", "funcDef") {
         @Override
         protected Parser<Ast> genParser() {
             return Parser.literal("def").withSkipSpace().flatMap(def ->
@@ -340,8 +342,8 @@ public class ProgramParser implements Parser<Ast> {
     }
 
     @Override
-    public ParseResult<Ast> parse(String input, int location) {
-        return parser.parse(input, location);
+    public Tuple<ParseContext, ParseResult<Ast>> parse(String input, ParseContext context) {
+        return parser.parse(input, context);
     }
 
     private <X, Y> X foldLeft(X x, List<Y> list, BiFunction<X, Y, X> func) {

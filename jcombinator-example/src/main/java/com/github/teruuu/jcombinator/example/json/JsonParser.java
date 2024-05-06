@@ -1,5 +1,6 @@
 package com.github.teruuu.jcombinator.example.json;
 
+import com.github.teruuu.jcombinator.core.parser.ParseContext;
 import com.github.teruuu.jcombinator.core.parser.ParseResult;
 import com.github.teruuu.jcombinator.core.parser.Parser;
 import com.github.teruuu.jcombinator.core.parser.ParserBase;
@@ -71,14 +72,14 @@ public class JsonParser implements Parser<Json> {
             };
 
             @Override
-            public ParseResult<Json> parse(String input, int location) {
-                return jsonParser.parse(input, location);
+            public Tuple<ParseContext, ParseResult<Json>> parse(String input, ParseContext context) {
+                return jsonParser.parse(input, context);
             }
         };
     }
 
     @Override
-    public ParseResult<Json> parse(String input, int location) {
-        return parser.parse(input, location);
+    public Tuple<ParseContext, ParseResult<Json>> parse(String input, ParseContext context) {
+        return parser.parse(input, context);
     }
 }

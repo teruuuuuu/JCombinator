@@ -1,15 +1,36 @@
 package com.github.teruuu.jcombinator.core.parser;
 
+import com.github.teruuu.jcombinator.core.parser.type.Tuple;
+
 public abstract class ParserBase<T> implements Parser<T> {
     Parser<T> parser;
-
     protected abstract Parser<T> genParser();
 
+    private String label;
+    private String message;
+
+    public ParserBase() {
+
+    }
+    public ParserBase(String label, String message) {
+        this.label = label;
+        this.message = message;
+    }
+
     @Override
-    public ParseResult<T> parse(String input, int location) {
+    public Tuple<ParseContext, ParseResult<T>> parse(String input) {
+        return parse(input, ParseContext.context(label, 0));
+    }
+
+    @Override
+    public Tuple<ParseContext, ParseResult<T>> parse(String input, ParseContext context) {
         if (parser == null) {
-            this.parser = genParser();
+            if (label != null) {
+                this.parser = genParser().labeled(label, message);
+            } else {
+                this.parser = genParser();
+            }
         }
-        return parser.parse(input, location);
+        return parser.parse(input, context);
     }
 }

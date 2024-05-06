@@ -1,5 +1,7 @@
 package com.github.teruuu.jcombinator.core.parser;
 
+import com.github.teruuu.jcombinator.core.parser.type.Tuple;
+
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -15,7 +17,7 @@ public class ArrayParser<T, X, Y, Z> implements Parser<List<T>> {
     }
 
     @Override
-    public ParseResult<List<T>> parse(String input, int location) {
-        return this.parser.parse(input, location);
+    public Tuple<ParseContext, ParseResult<List<T>>> parse(String input, ParseContext context) {
+        return this.parser.parse(input, context);
     }
 }

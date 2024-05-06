@@ -1,7 +1,9 @@
 package com.github.teruuu.parser;
 
+import com.github.teruuu.jcombinator.core.parser.ParseContext;
 import com.github.teruuu.jcombinator.core.parser.ParseResult;
 import com.github.teruuu.jcombinator.core.parser.Parser;
+import com.github.teruuu.jcombinator.core.parser.type.Tuple;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -17,7 +19,8 @@ public class RangeParserTest {
                 Parser.range('a', 'z').or(Parser.range('A', 'Z')).or(Parser.range('0', '9')).or(Parser.literal('_')).seq0()
         ).map(e -> e._1() + String.join("", e._2())).withSkipSpace();
 
-        ParseResult<String> parseResult = parer.parse("def main123_(){}", 3);
+        Tuple<ParseContext, ParseResult<String>> parseResultState = parer.parse("def main123_(){}", ParseContext.context(3));
+        ParseResult<String> parseResult = parseResultState._2();
         assertTrue(parseResult instanceof ParseResult.Success<String>);
         String value = ((ParseResult.Success<String>) parseResult).value();
         assertEquals("main123_", value);

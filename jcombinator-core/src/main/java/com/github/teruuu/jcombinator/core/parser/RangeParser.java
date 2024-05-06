@@ -1,5 +1,7 @@
 package com.github.teruuu.jcombinator.core.parser;
 
+import com.github.teruuu.jcombinator.core.parser.type.Tuple;
+
 public class RangeParser implements Parser<String> {
     final char c1;
     final char c2;
@@ -10,16 +12,16 @@ public class RangeParser implements Parser<String> {
     }
 
     @Override
-    public ParseResult<String> parse(String input, int location) {
-        if (input.length() > location) {
-            char c = input.charAt(location);
+    public Tuple<ParseContext, ParseResult<String>> parse(String input, ParseContext context) {
+        if (input.length() > context.location()) {
+            char c = input.charAt(context.location());
             if (c >= c1 && c <= c2) {
-                return new ParseResult.Success<>(String.valueOf(c), location + 1);
+                return new Tuple<>(context.move(1), new ParseResult.Success<>(String.valueOf(c)));
             } else {
-                return new ParseResult.Failure<>("", location);
+                return new Tuple<>(context.newError("range", "not range"), new ParseResult.Failure<>());
             }
         } else {
-            return new ParseResult.Failure<>("", location);
+            return new Tuple<>(context.newError("range", "reach end"), new ParseResult.Failure<>());
         }
     }
 }

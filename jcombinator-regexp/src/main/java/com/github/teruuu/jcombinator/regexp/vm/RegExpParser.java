@@ -1,8 +1,10 @@
 package com.github.teruuu.jcombinator.regexp.vm;
 
+import com.github.teruuu.jcombinator.core.parser.ParseContext;
 import com.github.teruuu.jcombinator.core.parser.ParseResult;
 import com.github.teruuu.jcombinator.core.parser.Parser;
 import com.github.teruuu.jcombinator.core.parser.ParserBase;
+import com.github.teruuu.jcombinator.core.parser.type.Tuple;
 
 import java.util.List;
 import java.util.function.BiFunction;
@@ -57,59 +59,60 @@ public class RegExpParser implements Parser<Rule> {
     };
 
 
-    Parser<Rule> charParser = (input, location) -> {
-        if (input.length() > location) {
-            char c0 = input.charAt(location);
+    Parser<Rule> charParser = (input, context) -> {
+        if (input.length() > context.location()) {
+            char c0 = input.charAt(context.location());
             if (c0 == ESCAPE) {
-                if (input.length() > location + 1) {
-                    char c1 = input.charAt(location);
+                if (input.length() > context.location() + 1) {
+                    char c1 = input.charAt(context.location());
                     for (char reservedWord : ESCAPE_WORDS) {
                         if (c1 == reservedWord) {
-                            return new ParseResult.Success<>(Rule.literal(reservedWord), location + 2);
+                            return new Tuple<>(context.move(2), new ParseResult.Success<>(Rule.literal(reservedWord)));
                         }
                     }
-                    return new ParseResult.Failure<>("", location);
+                    return new Tuple<>(context.newError(context.location() + 1, "regexp", "invalid escape"), new ParseResult.Failure<>());
                 }
             }
             for (char reservedWord : ESCAPE_WORDS) {
                 if (c0 == reservedWord) {
-                    return new ParseResult.Failure<>("", location);
+                    return new Tuple<>(context.newError("regexp", "invalid escape"), new ParseResult.Failure<>());
                 }
             }
-            return new ParseResult.Success<>(Rule.literal(input.charAt(location)), location + 1);
+            return new Tuple<>(context.move(1), new ParseResult.Success<>(Rule.literal(input.charAt(context.location()))));
         } else {
-            return new ParseResult.Failure<>("", location);
+            return new Tuple<>(context.newError("regexp", "invalid escape"), new ParseResult.Failure<>());
         }
     };
 
-    Parser<Rule> anyParser = (input, location) -> {
-        if (input.length() > location && input.charAt(location) == DOT) {
-            return new ParseResult.Success<>(Rule.any(), location + 1);
+    Parser<Rule> anyParser = (input, context) -> {
+        if (input.length() > context.location() && input.charAt(context.location()) == DOT) {
+            return new Tuple<>(context.move(1), new ParseResult.Success<>(Rule.any()));
         } else {
-            return new ParseResult.Failure<>("", location);
+            return new Tuple<>(context.newError("regexp", "not any parser"), new ParseResult.Failure<>());
         }
     };
 
-    Parser<Rule> headParser = (input, location) -> {
-        if (input.length() > location && location == 0 && input.charAt(location) == HAT) {
-            return new ParseResult.Success<>(Rule.head(), location + 1);
+    Parser<Rule> headParser = (input, context) -> {
+        if (input.length() > context.location() && context.location() == 0 && input.charAt(0) == HAT) {
+            return new Tuple<>(context.move(1), new ParseResult.Success<>(Rule.head()));
         } else {
-            return new ParseResult.Failure<>("", location);
+            return new Tuple<>(context.newError("regexp", "not head parser"), new ParseResult.Failure<>());
         }
     };
 
-    Parser<Rule> endParser = (input, location) -> {
-        if (input.length() - 1 == location && input.charAt(location) == DOL) {
-            return new ParseResult.Success<>(Rule.end(), location + 1);
+    Parser<Rule> endParser = (input, context) -> {
+        if (input.length() - 1 == context.location() && input.charAt(context.location()) == DOL) {
+            return new Tuple<>(context.move(1), new ParseResult.Success<>(Rule.end()));
         } else {
-            return new ParseResult.Failure<>("", location);
+            return new Tuple<>(context.newError("regexp", "not end parser"), new ParseResult.Failure<>());
         }
     };
 
     // ex: [a-z]
     Parser<Rule> whichParser = new ParserBase<>() {
 
-        Parser<Integer> charParser = (input, location) -> {
+        Parser<Integer> charParser = (input, context) -> {
+            int location = context.location();
             if (input.length() > location) {
                 char c0 = input.charAt(location);
                 if (c0 == ESCAPE) {
@@ -125,18 +128,18 @@ public class RegExpParser implements Parser<Rule> {
                         }
                     }
                     if (!escapeOk) {
-                        return new ParseResult.Failure<>("", location);
+                        new Tuple<>(context.newError(location, "regexp", "invalid escape"), new ParseResult.Failure<>());
                     }
                 } else {
                     for (char reservedWord : ESCAPE_WORDS) {
                         if (c0 == reservedWord) {
-                            return new ParseResult.Failure<>("", location);
+                            return new Tuple<>(context.newError(location, "regexp", "reserve word found"), new ParseResult.Failure<>());
                         }
                     }
                 }
-                return new ParseResult.Success<>((int) c0, location + 1);
+                return new Tuple<>(context.move(1), new ParseResult.Success<>((int) c0));
             } else {
-                return new ParseResult.Failure<>("", location);
+                return new Tuple<>(context.newError(location, "regexp", "reach end"), new ParseResult.Failure<>());
             }
         };
         final Parser<Rule> whichInner = charParser.andLeft(Parser.literal(MINUS)).and(charParser).
@@ -235,13 +238,14 @@ public class RegExpParser implements Parser<Rule> {
                             or(Parser.literal(PLUS).map(a -> Rule.oneSeq(rule))).
                             or(Parser.literal(QUESTION).map(a -> Rule.option(rule))).
                             or(seqRangeParser.map(seqRange -> seqRange.apply(rule)).
-                                    or((input, location) -> new ParseResult.Success<>(rule, location))));
+                                    or((input, context) -> new Tuple<>(context, new ParseResult.Success<>(rule)))));
 
         }
     };
 
     Parser<Function<Rule, Rule>> seqRangeParser = new ParserBase<>() {
-        final Parser<Integer> numberParser = (input, location) -> {
+        final Parser<Integer> numberParser = (input, context) -> {
+            int location = context.location();
             int ret = 0;
             boolean isNumber = false;
             while (true) {
@@ -256,9 +260,9 @@ public class RegExpParser implements Parser<Rule> {
 
             }
             if (isNumber) {
-                return new ParseResult.Success<>(ret, location);
+                return new Tuple<>(context.newLocation(location), new ParseResult.Success<>(ret));
             } else {
-                return new ParseResult.Failure<>("", location);
+                return new Tuple<>(context.newError(location, "regexp", ""), new ParseResult.Failure<>());
             }
         };
 
@@ -324,7 +328,7 @@ public class RegExpParser implements Parser<Rule> {
 
 
     @Override
-    public ParseResult<Rule> parse(String input, int location) {
-        return parser.parse(input, location);
+    public Tuple<ParseContext, ParseResult<Rule>> parse(String input, ParseContext context) {
+        return parser.parse(input, context);
     }
 }

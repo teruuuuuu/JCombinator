@@ -1,5 +1,7 @@
 package com.github.teruuu.jcombinator.core.parser;
 
+import com.github.teruuu.jcombinator.core.parser.type.Tuple;
+
 public class DQuoteStringParser implements Parser<String> {
     private final Parser<String> parser;
 
@@ -10,7 +12,7 @@ public class DQuoteStringParser implements Parser<String> {
     }
 
     @Override
-    public ParseResult<String> parse(String input, int location) {
-        return parser.parse(input, location);
+    public Tuple<ParseContext, ParseResult<String>> parse(String input, ParseContext context) {
+        return parser.parse(input, context);
     }
 }

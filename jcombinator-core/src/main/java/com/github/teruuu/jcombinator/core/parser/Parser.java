@@ -14,10 +14,13 @@ import java.util.function.Function;
  */
 public interface Parser<T> {
 
-    ParseResult<T> parse(String input, int location);
+    Tuple<ParseContext, ParseResult<T>> parse(String input, ParseContext parseContext);
 
-    default ParseResult<T> parse(String input) {
-        return parse(input, 0);
+    default Tuple<ParseContext, ParseResult<T>> parse(String input) {
+        return parse(input, ParseContext.context(null, 0));
+    }
+    default Tuple<ParseContext, ParseResult<T>> parse(String label, String input) {
+        return parse(input, ParseContext.context(label, 0));
     }
 
     default <X> Parser<Tuple<T, X>> and(Parser<X> parser) {
@@ -66,13 +69,16 @@ public interface Parser<T> {
 
     default <X> Parser<X> flatMap(Function<T, Parser<X>> flatMapFunc) {
         Parser<T> capture = this;
-        return (input, location) -> {
-            switch (capture.parse(input, location)) {
+        return (input, context) -> {
+            Tuple<ParseContext, ParseResult<T>> parseResultState = capture.parse(input, context);
+            ParseContext fContext = parseResultState._1();
+            ParseResult<T> fparseResult = parseResultState._2();
+            switch (fparseResult) {
                 case ParseResult.Success<T> success -> {
-                    return flatMapFunc.apply(success.value()).parse(input, success.next());
+                    return flatMapFunc.apply(success.value()).parse(input, fContext);
                 }
-                case ParseResult.Failure<T> failure -> {
-                    return new ParseResult.Failure<>(failure.message(), failure.next());
+                case ParseResult.Failure<T> failure-> {
+                    return new Tuple<>(fContext, new ParseResult.Failure<>());
                 }
             }
         };
@@ -86,6 +92,23 @@ public interface Parser<T> {
         return new IntegerParser();
     }
 
+    default Parser<T> labeled(String label, String message) {
+        return (input, context) -> {
+            Tuple<ParseContext, ParseResult<T>> parseResultState = this.parse(input, context);
+            ParseContext fContext = parseResultState._1();
+            ParseResult<T> fParseResult = parseResultState._2();
+
+            switch (fParseResult) {
+                case ParseResult.Success<T> success -> {
+                    return parseResultState;
+                }
+                case ParseResult.Failure<T> failure -> {
+                    return new Tuple<>(context.newError(label, message).addError(fContext), new ParseResult.Failure<>());
+                }
+            }
+        };
+    }
+
     static Parser<String> literal(String literal) {
         return new StringParser(literal);
     }
@@ -95,13 +118,17 @@ public interface Parser<T> {
     }
 
     default <X> Parser<X> map(Function<T, X> mapFunc) {
-        return (input, location) -> {
-            switch (this.parse(input, location)) {
+        return (input, context) -> {
+            Tuple<ParseContext, ParseResult<T>> parseResultState = this.parse(input, context);
+            ParseContext fContext = parseResultState._1();
+            ParseResult<T> fParseResult = parseResultState._2();
+
+            switch (fParseResult) {
                 case ParseResult.Success<T> success -> {
-                    return new ParseResult.Success<>(mapFunc.apply(success.value()), success.next());
+                    return new Tuple<>(fContext, new ParseResult.Success<>(mapFunc.apply(success.value())));
                 }
                 case ParseResult.Failure<T> failure -> {
-                    return new ParseResult.Failure<>(failure.message(), failure.next());
+                    return new Tuple<>(fContext, new ParseResult.Failure<>());
                 }
             }
         };

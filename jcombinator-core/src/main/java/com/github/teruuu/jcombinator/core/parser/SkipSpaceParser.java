@@ -1,8 +1,11 @@
 package com.github.teruuu.jcombinator.core.parser;
 
+import com.github.teruuu.jcombinator.core.parser.type.Tuple;
+
 public class SkipSpaceParser implements Parser<Void> {
     @Override
-    public ParseResult<Void> parse(String input, int location) {
+    public Tuple<ParseContext, ParseResult<Void>> parse(String input, ParseContext context) {
+        int location = context.location();
         char c;
         while (true) {
             if (input.length() == location) {
@@ -16,6 +19,6 @@ public class SkipSpaceParser implements Parser<Void> {
                 break;
             }
         }
-        return new ParseResult.Success<>(null, location);
+        return new Tuple<>(context.newLocation(location), new ParseResult.Success<>(null));
     }
 }

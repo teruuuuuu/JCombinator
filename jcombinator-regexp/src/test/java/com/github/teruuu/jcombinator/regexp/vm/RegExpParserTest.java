@@ -1,7 +1,9 @@
 package com.github.teruuu.jcombinator.regexp.vm;
 
+import com.github.teruuu.jcombinator.core.parser.ParseContext;
 import com.github.teruuu.jcombinator.core.parser.ParseResult;
 import com.github.teruuu.jcombinator.core.parser.Parser;
+import com.github.teruuu.jcombinator.core.parser.type.Tuple;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -14,7 +16,8 @@ public class RegExpParserTest {
     @Test
     public void test() {
         Parser<Rule> parser = new RegExpParser();
-        ParseResult<Rule> parseResult = parser.parse("abc");
+        Tuple<ParseContext, ParseResult<Rule>> parseResultState = parser.parse("abc");
+        ParseResult<Rule> parseResult = parseResultState._2();
 
         assertTrue(parseResult instanceof ParseResult.Success<Rule>);
         Rule rule = ((ParseResult.Success<Rule>) parseResult).value();
@@ -25,7 +28,8 @@ public class RegExpParserTest {
         RegExpResult.Success success = (RegExpResult.Success) regExpResult;
         assertEquals(success, RegExpResult.success(Location.of(0, 3)));
 
-        parseResult = parser.parse("(ab)*");
+        parseResultState = parser.parse("(ab)*");
+        parseResult = parseResultState._2();
         assertTrue(parseResult instanceof ParseResult.Success<Rule>);
         rule = ((ParseResult.Success<Rule>) parseResult).value();
         assertEquals(rule, Rule.zeroSeq(Rule.cons(Rule.literal('a'), Rule.literal('b'))));
@@ -35,7 +39,8 @@ public class RegExpParserTest {
         success = (RegExpResult.Success) regExpResult;
         assertEquals(success, RegExpResult.success(Location.of(0, 2), Location.of(2, 2), Location.of(3, 3)));
 
-        parseResult = parser.parse("abc+|d+");
+        parseResultState = parser.parse("abc+|d+");
+        parseResult = parseResultState._2();
         assertTrue(parseResult instanceof ParseResult.Success<Rule>);
         rule = ((ParseResult.Success<Rule>) parseResult).value();
         assertEquals(rule, Rule.select(
@@ -55,7 +60,8 @@ public class RegExpParserTest {
         assertEquals(success, RegExpResult.success(Location.of(0, 7), Location.of(9, 13)));
 
 
-        parseResult = parser.parse(".*hoge.*");
+        parseResultState = parser.parse(".*hoge.*");
+        parseResult = parseResultState._2();
         assertTrue(parseResult instanceof ParseResult.Success<Rule>);
         rule = ((ParseResult.Success<Rule>) parseResult).value();
         assertEquals(rule, Rule.cons(
@@ -82,7 +88,8 @@ public class RegExpParserTest {
         assertEquals(success, RegExpResult.success(Location.of(0, 18)));
 
 
-        parseResult = parser.parse("apple|banana");
+        parseResultState = parser.parse("apple|banana");
+        parseResult = parseResultState._2();
         assertTrue(parseResult instanceof ParseResult.Success<Rule>);
         rule = ((ParseResult.Success<Rule>) parseResult).value();
         assertEquals(rule, Rule.select(
@@ -117,7 +124,8 @@ public class RegExpParserTest {
                         )
                 )
         );
-        parseResult = parser.parse("(apple|banana)");
+        parseResultState = parser.parse("(apple|banana)");
+        parseResult = parseResultState._2();
         assertTrue(parseResult instanceof ParseResult.Success<Rule>);
         rule = ((ParseResult.Success<Rule>) parseResult).value();
         assertEquals(rule, Rule.select(
@@ -158,7 +166,8 @@ public class RegExpParserTest {
         success = (RegExpResult.Success) regExpResult;
         assertEquals(success, RegExpResult.success(Location.of(0, 5), Location.of(6, 11), Location.of(12, 18), Location.of(19, 25)));
 
-        parseResult = parser.parse("^apple|banana$");
+        parseResultState = parser.parse("^apple|banana$");
+        parseResult = parseResultState._2();
         assertTrue(parseResult instanceof ParseResult.Success<Rule>);
         rule = ((ParseResult.Success<Rule>) parseResult).value();
         assertEquals(rule, Rule.select(
@@ -206,7 +215,8 @@ public class RegExpParserTest {
         assertEquals(success, RegExpResult.success(Location.of(0, 5), Location.of(19, 25)));
 
 
-        parseResult = parser.parse("[a-zA-Z-]");
+        parseResultState = parser.parse("[a-zA-Z-]");
+        parseResult = parseResultState._2();
         assertTrue(parseResult instanceof ParseResult.Success<Rule>);
         rule = ((ParseResult.Success<Rule>) parseResult).value();
         assertEquals(rule, Rule.select(Rule.select(Rule.range('a', 'z'), Rule.range('A', 'Z')), Rule.literal('-')));
@@ -217,7 +227,8 @@ public class RegExpParserTest {
         assertEquals(success, RegExpResult.success(Location.of(0, 1), Location.of(1, 2), Location.of(2, 3),
                 Location.of(8, 9), Location.of(9, 10), Location.of(10, 11), Location.of(11, 12)));
 
-        parseResult = parser.parse("[^a-zA-Z!]");
+        parseResultState = parser.parse("[^a-zA-Z!]");
+        parseResult = parseResultState._2();
         assertTrue(parseResult instanceof ParseResult.Success<Rule>);
         rule = ((ParseResult.Success<Rule>) parseResult).value();
         assertEquals(rule, Rule.not(Rule.select(Rule.select(Rule.range('a', 'z'), Rule.range('A', 'Z')), Rule.literal('!'))));
@@ -227,7 +238,8 @@ public class RegExpParserTest {
         success = (RegExpResult.Success) regExpResult;
         assertEquals(success, RegExpResult.success(Location.of(3, 4), Location.of(4, 5), Location.of(5, 6), Location.of(6, 7), Location.of(7, 8)));
 
-        parseResult = parser.parse("a{3}");
+        parseResultState = parser.parse("a{3}");
+        parseResult = parseResultState._2();
         assertTrue(parseResult instanceof ParseResult.Success<Rule>);
         rule = ((ParseResult.Success<Rule>) parseResult).value();
         assertEquals(rule, Rule.quantity(Rule.literal('a'), 3));
@@ -237,7 +249,8 @@ public class RegExpParserTest {
         success = (RegExpResult.Success) regExpResult;
         assertEquals(success, RegExpResult.success(Location.of(0, 3), Location.of(3, 6)));
 
-        parseResult = parser.parse("a{,3}");
+        parseResultState = parser.parse("a{,3}");
+        parseResult = parseResultState._2();
         assertTrue(parseResult instanceof ParseResult.Success<Rule>);
         rule = ((ParseResult.Success<Rule>) parseResult).value();
         assertEquals(rule, Rule.quantityLess(Rule.literal('a'), 3));
@@ -247,7 +260,8 @@ public class RegExpParserTest {
         success = (RegExpResult.Success) regExpResult;
         assertEquals(success, RegExpResult.success(Location.of(0, 3), Location.of(3, 6), Location.of(6, 8), Location.of(8, 8)));
 
-        parseResult = parser.parse("x(?=abc)");
+        parseResultState = parser.parse("x(?=abc)");
+        parseResult = parseResultState._2();
         assertTrue(parseResult instanceof ParseResult.Success<Rule>);
         rule = ((ParseResult.Success<Rule>) parseResult).value();
         assertEquals(rule, Rule.cons(

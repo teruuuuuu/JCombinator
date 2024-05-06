@@ -1,5 +1,7 @@
 package com.github.teruuu.jcombinator.core.parser;
 
+import com.github.teruuu.jcombinator.core.parser.type.Tuple;
+
 import java.util.Optional;
 
 public class OptionalParser<T> implements Parser<Optional<T>> {
@@ -10,13 +12,22 @@ public class OptionalParser<T> implements Parser<Optional<T>> {
     }
 
     @Override
-    public ParseResult<Optional<T>> parse(String input, int location) {
-        switch (parser.parse(input, location)) {
+    public Tuple<ParseContext, ParseResult<Optional<T>>> parse(String input, ParseContext context) {
+        Tuple<ParseContext, ParseResult<T>> fParseResultState = parser.parse(input, context);
+        ParseContext newContext = fParseResultState._1();
+        ParseResult<T> parseResult = fParseResultState._2();
+
+        switch (parseResult) {
             case ParseResult.Success<T> success -> {
-                return new ParseResult.Success<>(Optional.of(success.value()), success.next());
+                return new Tuple<>(
+                        newContext,
+                        new ParseResult.Success<>(Optional.of(success.value())));
             }
             case ParseResult.Failure<T> failure -> {
-                return new ParseResult.Success<>(Optional.empty(), location);
+                return new Tuple<>(
+                        context.newError("optional", "not valid parser").addError(newContext),
+                        new ParseResult.Success<>(Optional.empty())
+                );
             }
         }
     }
