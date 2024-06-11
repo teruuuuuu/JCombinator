@@ -17,7 +17,7 @@ public class Seq1Parser<T> implements Parser<List<T>> {
             ParseResult<T> parseResult = parser.parse(input, location);
             if (parseResult instanceof ParseResult.Success<T> success) {
                 ret.add(success.value());
-                location = success.next();
+                location = success.location();
             } else {
                 break;
             }
@@ -25,7 +25,7 @@ public class Seq1Parser<T> implements Parser<List<T>> {
         if (!ret.isEmpty()) {
             return new ParseResult.Success<>(ret, location);
         } else {
-            return new ParseResult.Failure<>("", location);
+            return new ParseResult.Failure<>(new ParseError("seq1", "", location, List.of()), location);
         }
     }
 }

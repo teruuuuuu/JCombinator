@@ -1,5 +1,7 @@
 package com.github.teruuu.jcombinator.core.parser;
 
+import java.util.List;
+
 public class RangeParser implements Parser<String> {
     final char c1;
     final char c2;
@@ -16,10 +18,13 @@ public class RangeParser implements Parser<String> {
             if (c >= c1 && c <= c2) {
                 return new ParseResult.Success<>(String.valueOf(c), location + 1);
             } else {
-                return new ParseResult.Failure<>("", location);
+                return new ParseResult.Failure<>(
+                        new ParseError("range", String.format("range over %s >= %s && %s <= %s", c, c1, c, c2), location, List.of()),
+                        location);
             }
         } else {
-            return new ParseResult.Failure<>("", location);
+            return new ParseResult.Failure<>(
+                    new ParseError("range", "length over", location, List.of()), location);
         }
     }
 }

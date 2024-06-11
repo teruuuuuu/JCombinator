@@ -1,5 +1,6 @@
 package com.github.teruuu.jcombinator.regexp.vm;
 
+import com.github.teruuu.jcombinator.core.parser.ParseError;
 import com.github.teruuu.jcombinator.core.parser.ParseResult;
 import com.github.teruuu.jcombinator.core.parser.Parser;
 import com.github.teruuu.jcombinator.core.parser.ParserBase;
@@ -68,17 +69,17 @@ public class RegExpParser implements Parser<Rule> {
                             return new ParseResult.Success<>(Rule.literal(reservedWord), location + 2);
                         }
                     }
-                    return new ParseResult.Failure<>("", location);
+                    return new ParseResult.Failure<>(new ParseError("char", "", location, List.of()), location);
                 }
             }
             for (char reservedWord : ESCAPE_WORDS) {
                 if (c0 == reservedWord) {
-                    return new ParseResult.Failure<>("", location);
+                    return new ParseResult.Failure<>(new ParseError("char", "", location, List.of()), location);
                 }
             }
             return new ParseResult.Success<>(Rule.literal(input.charAt(location)), location + 1);
         } else {
-            return new ParseResult.Failure<>("", location);
+            return new ParseResult.Failure<>(new ParseError("char", "", location, List.of()), location);
         }
     };
 
@@ -86,7 +87,7 @@ public class RegExpParser implements Parser<Rule> {
         if (input.length() > location && input.charAt(location) == DOT) {
             return new ParseResult.Success<>(Rule.any(), location + 1);
         } else {
-            return new ParseResult.Failure<>("", location);
+            return new ParseResult.Failure<>(new ParseError("any", "", location, List.of()), location);
         }
     };
 
@@ -94,7 +95,7 @@ public class RegExpParser implements Parser<Rule> {
         if (input.length() > location && location == 0 && input.charAt(location) == HAT) {
             return new ParseResult.Success<>(Rule.head(), location + 1);
         } else {
-            return new ParseResult.Failure<>("", location);
+            return new ParseResult.Failure<>(new ParseError("head", "", location, List.of()), location);
         }
     };
 
@@ -102,7 +103,7 @@ public class RegExpParser implements Parser<Rule> {
         if (input.length() - 1 == location && input.charAt(location) == DOL) {
             return new ParseResult.Success<>(Rule.end(), location + 1);
         } else {
-            return new ParseResult.Failure<>("", location);
+            return new ParseResult.Failure<>(new ParseError("end", "", location, List.of()), location);
         }
     };
 
@@ -125,18 +126,18 @@ public class RegExpParser implements Parser<Rule> {
                         }
                     }
                     if (!escapeOk) {
-                        return new ParseResult.Failure<>("", location);
+                        return new ParseResult.Failure<>(new ParseError("which", "", location, List.of()), location);
                     }
                 } else {
                     for (char reservedWord : ESCAPE_WORDS) {
                         if (c0 == reservedWord) {
-                            return new ParseResult.Failure<>("", location);
+                            return new ParseResult.Failure<>(new ParseError("which", "", location, List.of()), location);
                         }
                     }
                 }
                 return new ParseResult.Success<>((int) c0, location + 1);
             } else {
-                return new ParseResult.Failure<>("", location);
+                return new ParseResult.Failure<>(new ParseError("which", "", location, List.of()), location);
             }
         };
         final Parser<Rule> whichInner = charParser.andLeft(Parser.literal(MINUS)).and(charParser).
@@ -258,7 +259,7 @@ public class RegExpParser implements Parser<Rule> {
             if (isNumber) {
                 return new ParseResult.Success<>(ret, location);
             } else {
-                return new ParseResult.Failure<>("", location);
+                return new ParseResult.Failure<>(new ParseError("seqRange", "", location, List.of()), location);
             }
         };
 

@@ -13,7 +13,7 @@ public class OptionalParser<T> implements Parser<Optional<T>> {
     public ParseResult<Optional<T>> parse(String input, int location) {
         switch (parser.parse(input, location)) {
             case ParseResult.Success<T> success -> {
-                return new ParseResult.Success<>(Optional.of(success.value()), success.next());
+                return new ParseResult.Success<>(Optional.of(success.value()), success.location());
             }
             case ParseResult.Failure<T> failure -> {
                 return new ParseResult.Success<>(Optional.empty(), location);

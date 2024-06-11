@@ -1,5 +1,7 @@
 package com.github.teruuu.jcombinator.core.parser;
 
+import java.util.List;
+
 public class SpaceParser implements Parser<Void> {
     @Override
     public ParseResult<Void> parse(String input, int location) {
@@ -12,13 +14,13 @@ public class SpaceParser implements Parser<Void> {
                 if (c2 == '\n') {
                     return new ParseResult.Success<>(null, location + 2);
                 } else {
-                    return new ParseResult.Failure<>("", location);
+                    return new ParseResult.Failure<>(new ParseError("space", "not space", location, List.of()), location);
                 }
             } else {
-                return new ParseResult.Failure<>("", location);
+                return new ParseResult.Failure<>(new ParseError("space", "not space", location, List.of()), location);
             }
         } else {
-            return new ParseResult.Failure<>("", location);
+            return new ParseResult.Failure<>(new ParseError("space", "not space", location, List.of()), location);
         }
     }
 }

@@ -17,7 +17,7 @@ public class Seq0Parser<T> implements Parser<List<T>> {
             ParseResult<T> parseResult = parser.parse(input, location);
             if (parseResult instanceof ParseResult.Success<T> success) {
                 ret.add(success.value());
-                location = success.next();
+                location = success.location();
             } else {
                 break;
             }

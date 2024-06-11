@@ -2,6 +2,8 @@ package com.github.teruuu.jcombinator.core.parser;
 
 import com.github.teruuu.jcombinator.core.parser.type.Either;
 
+import java.util.List;
+
 public class NumberParser implements Parser<Either<Integer, Double>> {
     int reallyBig = Integer.MAX_VALUE / 10;
     double reallyMini = Double.MAX_VALUE / 10;
@@ -25,14 +27,18 @@ public class NumberParser implements Parser<Either<Integer, Double>> {
             // 整数部分
             while (length > location && input.charAt(location) >= '0' && input.charAt(location) <= '9') {
                 if (number >= reallyBig) {
-                    return new ParseResult.Failure<>(String.format("exceeds the limit(location=[%d] input=[%s]", location, input), location);
+                    return new ParseResult.Failure<>(
+                            new ParseError("number", String.format("exceeds the limit(location=[%d] input=[%s]", location, input), location, List.of()),
+                            location);
                 }
                 number *= 10;
                 number += (input.charAt(location) - '0');
                 location++;
             }
         } else {
-            return new ParseResult.Failure<>(String.format("not number(location=[%d] input=[%s]", location, input), location);
+            return new ParseResult.Failure<>(
+                    new ParseError("number", String.format("not number(location=[%d] input=[%s]", location, input), location, List.of()),
+                    location);
         }
         if (length == location || input.charAt(location) != '.') {
             return new ParseResult.Success<>(new Either.Left<>(signe * number), location);
@@ -41,7 +47,9 @@ public class NumberParser implements Parser<Either<Integer, Double>> {
             // 小数部分
             while (length > location && input.charAt(location) >= '0' && input.charAt(location) <= '9') {
                 if (decimalDigit >= reallyMini) {
-                    return new ParseResult.Failure<>(String.format("exceeds the limit(location=[%d] input=[%s]", location, input), location);
+                    return new ParseResult.Failure<>(
+                            new ParseError("number", String.format("exceeds the limit(location=[%d] input=[%s]", location, input), location, List.of()),
+                            location);
                 }
                 decimal *= 10;
                 decimal += (input.charAt(location) - '0');

@@ -1,5 +1,7 @@
 package com.github.teruuu.jcombinator.core.parser;
 
+import java.util.List;
+
 public class EscapeParser implements Parser<String> {
     @Override
     public ParseResult<String> parse(String input, int location) {
@@ -23,6 +25,9 @@ public class EscapeParser implements Parser<String> {
                 return new ParseResult.Success<>(String.valueOf('\''), location + 2);
             }
         }
-        return new ParseResult.Failure<>(String.format("not escape location=[%d] input=[%s]", location, input), location);
+        return new ParseResult.Failure<>(
+                new ParseError("escape", String.format("not escape location=[%d] input=[%s]", location, input), location, List.of()),
+                location
+        );
     }
 }

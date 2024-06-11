@@ -69,10 +69,10 @@ public interface Parser<T> {
         return (input, location) -> {
             switch (capture.parse(input, location)) {
                 case ParseResult.Success<T> success -> {
-                    return flatMapFunc.apply(success.value()).parse(input, success.next());
+                    return flatMapFunc.apply(success.value()).parse(input, success.location());
                 }
                 case ParseResult.Failure<T> failure -> {
-                    return new ParseResult.Failure<>(failure.message(), failure.next());
+                    return new ParseResult.Failure<>(failure.parseError(), failure.location());
                 }
             }
         };
@@ -85,7 +85,6 @@ public interface Parser<T> {
     static Parser<Integer> integer() {
         return new IntegerParser();
     }
-
     static Parser<String> literal(String literal) {
         return new StringParser(literal);
     }
@@ -98,10 +97,10 @@ public interface Parser<T> {
         return (input, location) -> {
             switch (this.parse(input, location)) {
                 case ParseResult.Success<T> success -> {
-                    return new ParseResult.Success<>(mapFunc.apply(success.value()), success.next());
+                    return new ParseResult.Success<>(mapFunc.apply(success.value()), success.location());
                 }
                 case ParseResult.Failure<T> failure -> {
-                    return new ParseResult.Failure<>(failure.message(), failure.next());
+                    return new ParseResult.Failure<>(failure.parseError(), failure.location());
                 }
             }
         };

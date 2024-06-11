@@ -1,8 +1,10 @@
 package com.github.teruuu.jcombinator.example.program.parser;
 
+import com.github.teruuu.jcombinator.core.parser.ParseError;
 import com.github.teruuu.jcombinator.core.parser.ParseResult;
 import com.github.teruuu.jcombinator.core.parser.Parser;
 import com.github.teruuu.jcombinator.core.parser.ParserBase;
+import com.github.teruuu.jcombinator.core.parser.SkipSpaceParser;
 import com.github.teruuu.jcombinator.example.program.ast.Assignment;
 import com.github.teruuu.jcombinator.example.program.ast.Ast;
 import com.github.teruuu.jcombinator.example.program.ast.AstBool;
@@ -17,6 +19,7 @@ import com.github.teruuu.jcombinator.example.program.ast.IfExpression;
 import com.github.teruuu.jcombinator.example.program.ast.Operator;
 import com.github.teruuu.jcombinator.example.program.ast.Program;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -34,7 +37,7 @@ public class ProgramParser implements Parser<Ast> {
         if (symbol.equals("if") || symbol.equals("else") || symbol.equals("var")
                 || symbol.equals("{") || symbol.equals("}") || symbol.equals("<") || symbol.equals("<=")
                 || symbol.equals(">") || symbol.equals(">=")) {
-            return new ParseResult.Failure<>("yoyakugo", location);
+            return new ParseResult.Failure<>(new ParseError("symbol", "yoyakugo", location, List.of()), location);
         } else {
             return new ParseResult.Success<>(symbol, location);
         }
@@ -329,10 +332,41 @@ public class ProgramParser implements Parser<Ast> {
 
     // program ::= (assign|funcDef|callFunc)*
     private final Parser<Ast> parser = new ParserBase<>() {
+
+
         @Override
         protected Parser<Ast> genParser() {
-            Parser<Ast> p = assignParser.or(funcDefParser).or(callFuncParser).withSkipSpace().seq0().map(Program::new);
-            return p.andLeft(Parser.end().withSkipSpace());
+
+            Parser<Ast> topLevelParser = assignParser.or(funcDefParser).or(callFuncParser).withSkipSpace();
+            Parser<Void> skipSpace = new SkipSpaceParser();
+            return new Parser<Ast>() {
+
+                @Override
+                public ParseResult<Ast> parse(String input, int location) {
+                    List<Ast> asts = new ArrayList<>();
+                    while (true) {
+                        ParseResult<Void> skipSpaceResult = skipSpace.parse(input, location);
+                        if (skipSpaceResult instanceof ParseResult.Failure<Void>) {
+                            break;
+                        }
+                        location = ((ParseResult.Success<Void>) skipSpaceResult).location();
+                        if (location == input.length()) {
+                            break;
+                        }
+
+                        switch (topLevelParser.parse(input, location)) {
+                            case ParseResult.Success<Ast> success -> {
+                                asts.add(success.value());
+                                location = success.location();
+                            }
+                            case ParseResult.Failure<Ast> failure -> {
+                                return new ParseResult.Failure<>(new ParseError("program", "failed", location, List.of(failure.parseError())), location);
+                            }
+                        }
+                    }
+                    return new ParseResult.Success<>(new Program(asts), location);
+                }
+            };
         }
     };
 

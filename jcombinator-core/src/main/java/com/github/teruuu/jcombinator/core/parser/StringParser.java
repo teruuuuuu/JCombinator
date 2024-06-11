@@ -1,5 +1,7 @@
 package com.github.teruuu.jcombinator.core.parser;
 
+import java.util.List;
+
 public class StringParser implements Parser<String> {
     final String literal;
 
@@ -12,7 +14,9 @@ public class StringParser implements Parser<String> {
         if (input.startsWith(literal, location)) {
             return new ParseResult.Success<>(literal, location + literal.length());
         } else {
-            return new ParseResult.Failure<>(String.format("not (literal=[%s], loc=[%d]), input=%s", literal, location, input), location);
+            return new ParseResult.Failure<>(
+                    new ParseError("string", String.format("not (literal=[%s], loc=[%d]), input=%s", literal, location, input), location, List.of()),
+                    location);
         }
     }
 }

@@ -1,5 +1,7 @@
 package com.github.teruuu.jcombinator.core.parser;
 
+import java.util.List;
+
 public class IntegerParser implements Parser<Integer> {
     int reallyBig = Integer.MAX_VALUE / 10;
 
@@ -9,7 +11,10 @@ public class IntegerParser implements Parser<Integer> {
         int number = 0;
         int length = input.length();
         if (length <= location) {
-            return new ParseResult.Failure<>("index out of bounds", location);
+
+            return new ParseResult.Failure<>(
+                    new ParseError("integer", "index out of bounds", location, List.of()),
+                    location);
         }
 
         if (input.charAt(location) == '-') {
@@ -24,7 +29,9 @@ public class IntegerParser implements Parser<Integer> {
             // 整数部分
             while (length > location && input.charAt(location) >= '0' && input.charAt(location) <= '9') {
                 if (number >= reallyBig) {
-                    return new ParseResult.Failure<>(String.format("exceeds the limit(location=[%d] input=[%s]", location, input), location);
+                    return new ParseResult.Failure<>(
+                            new ParseError("integer", String.format("exceeds the limit(location=[%d] input=[%s]", location, input), location, List.of()),
+                            location);
                 }
                 number *= 10;
                 number += (input.charAt(location) - '0');
@@ -32,7 +39,9 @@ public class IntegerParser implements Parser<Integer> {
             }
             return new ParseResult.Success<>(signe * number, location);
         } else {
-            return new ParseResult.Failure<>(String.format("not number(location=[%d] input=[%s]", location, input), location);
+            return new ParseResult.Failure<>(
+                    new ParseError("integer", String.format("not number(location=[%d] input=[%s]", location, input), location, List.of()),
+                    location);
         }
     }
 }

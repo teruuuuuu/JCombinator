@@ -1,5 +1,7 @@
 package com.github.teruuu.jcombinator.core.parser;
 
+import java.util.List;
+
 public class StopWardParser implements Parser<String> {
     private final String literal;
 
@@ -14,6 +16,8 @@ public class StopWardParser implements Parser<String> {
                 return new ParseResult.Success<>(input.substring(location, i), i);
             }
         }
-        return new ParseResult.Failure<>(String.format("not find literal=[%s], location=[%d] input=[%s]", literal, location, input), location);
+        return new ParseResult.Failure<>(
+                new ParseError("stopWard", String.format("not find literal=[%s], location=[%d] input=[%s]", literal, location, input), location, List.of()),
+                location);
     }
 }

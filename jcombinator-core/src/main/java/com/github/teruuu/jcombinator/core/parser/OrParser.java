@@ -23,7 +23,9 @@ public class OrParser<X> implements Parser<X> {
                         return ssuccess;
                     }
                     case ParseResult.Failure<X> sfailure -> {
-                        return new ParseResult.Failure<>(String.join(",", List.of(ffailure.message(), sfailure.message())), location);
+                        return new ParseResult.Failure<>(
+                                new ParseError("or", "", location, List.of(ffailure.parseError(), sfailure.parseError())),
+                                location);
                     }
                 }
             }
